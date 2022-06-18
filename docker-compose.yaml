@@ -6,7 +6,7 @@ services:
     container_name: rnkm-local-db
     restart: unless-stopped
     environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: rnkm-db
     volumes:
       - ./volumes/mysql:/var/lib/mysql
