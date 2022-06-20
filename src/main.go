@@ -4,9 +4,12 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	ur "github.com/isd-sgcu/rnkm65-backend/src/app/repository/user"
+	us "github.com/isd-sgcu/rnkm65-backend/src/app/service/user"
 	"github.com/isd-sgcu/rnkm65-backend/src/config"
 	"github.com/isd-sgcu/rnkm65-backend/src/database"
 	seed "github.com/isd-sgcu/rnkm65-backend/src/database/seeds"
+	"github.com/isd-sgcu/rnkm65-backend/src/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
@@ -105,7 +108,12 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
+
+	usrRepo := ur.NewRepository(db)
+	usrSvc := us.NewService(usrRepo)
+
 	grpc_health_v1.RegisterHealthServer(grpcServer, health.NewServer())
+	proto.RegisterUserServiceServer(grpcServer, usrSvc)
 
 	go func() {
 		log.Println(fmt.Sprintf("RNKM65 backend starting at port %v", conf.App.Port))

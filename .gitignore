@@ -25,3 +25,7 @@ config.yaml
 
 # volumes
 volumes
+
+# coverage report
+coverage.out
+coverage.html
