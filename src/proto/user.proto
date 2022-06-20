@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "src/proto";
+
+service UserService {
+  rpc FindOne(FindOneUserRequest) returns (FindOneUserResponse){}
+  rpc Create(CreateUserRequest) returns (CreateUserResponse){}
+  rpc Update(UpdateUserRequest) returns (UpdateUserResponse){}
+  rpc Delete(DeleteUserRequest) returns (DeleteUserResponse){}
+  rpc CreateOrUpdate(CreateOrUpdateUserRequest) returns (CreateOrUpdateUserResponse){}
+}
+
+message User{
+  string id = 1;
+  string firstname = 2;
+  string lastname = 3;
+  string nickname = 4;
+  string studentID = 5;
+  string faculty = 6;
+  string year = 7;
+  string phone = 8;
+  string lineID = 9;
+  string email = 10;
+  string allergyFood = 11;
+  string foodRestriction = 12;
+  string allergyMedicine = 13;
+  string disease = 14;
+  string vaccineCertificateUrl = 15;
+  string imageUrl = 16;
+}
+
+// FindOne
+
+message FindOneUserRequest{
+  string id = 1;
+}
+
+message FindOneUserResponse{
+  User user = 1;
+}
+
+// Create
+
+message CreateUserRequest{
+  User user = 1;
+}
+
+message CreateUserResponse{
+  User user = 1;
+}
+
+// Update
+
+message UpdateUserRequest{
+  User user = 1;
+}
+
+message UpdateUserResponse{
+  User user = 1;
+}
+
+// Delete
+
+message DeleteUserRequest{
+  string id = 1;
+}
+
+message DeleteUserResponse{
+  bool success = 1;
+}
+
+// Create or Update
+message CreateOrUpdateUserRequest{
+  User user = 1;
+}
+
+message CreateOrUpdateUserResponse{
+  User user = 1;
+}
