@@ -16,7 +16,7 @@ These instructions will get you a copy of the project up and running on your loc
 1. Clone the project from [RNKM65 Backend](https://github.com/isd-sgcu/rnkm65-backend)
 2. Import project
 3. Copy `config.example.yaml` in `config` and paste it in the same location then remove `.example` from its name.
-4. 4. Download dependencies by `go mod download`
+4. Download dependencies by `go mod download`
 
 ### Testing
 1. Run `go test  -v -coverpkg ./... -coverprofile coverage.out -covermode count ./...` or `make test`
