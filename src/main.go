@@ -8,6 +8,8 @@ import (
 	"github.com/isd-sgcu/rnkm65-backend/src/database"
 	seed "github.com/isd-sgcu/rnkm65-backend/src/database/seeds"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/health"
+	"google.golang.org/grpc/health/grpc_health_v1"
 	"gorm.io/gorm"
 	"log"
 	"net"
@@ -103,9 +105,10 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
+	grpc_health_v1.RegisterHealthServer(grpcServer, health.NewServer())
 
 	go func() {
-		fmt.Println(fmt.Sprintf("rnkm65 backend starting at port %v", conf.App.Port))
+		log.Println(fmt.Sprintf("RNKM65 backend starting at port %v", conf.App.Port))
 
 		if err = grpcServer.Serve(lis); err != nil {
 			log.Fatalln("Failed to serve:", err)
@@ -130,4 +133,9 @@ func main() {
 	})
 
 	<-wait
+
+	grpcServer.GracefulStop()
+	log.Println("Closing the listener")
+	lis.Close()
+	log.Println("End of Program")
 }
