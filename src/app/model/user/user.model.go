@@ -9,7 +9,7 @@ type User struct {
 	Firstname             string `json:"firstname" gorm:"type:tinytext"`
 	Lastname              string `json:"lastname" gorm:"type:tinytext"`
 	Nickname              string `json:"nickname" gorm:"type:tinytext"`
-	StudentID             string `json:"student_id" gorm:"type:tinytext"`
+	StudentID             string `json:"student_id" gorm:"index:,unique"`
 	Faculty               string `json:"faculty" gorm:"type:tinytext"`
 	Year                  string `json:"year" gorm:"type:tinytext"`
 	Phone                 string `json:"phone" gorm:"type:tinytext"`
