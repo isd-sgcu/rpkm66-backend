@@ -330,3 +330,31 @@ func (t *UserServiceTest) TestCreateOrUpdateInternalErr() {
 	assert.Nil(t.T(), actual)
 	assert.Equal(t.T(), codes.Internal, st.Code())
 }
+
+func (t *UserServiceTest) TestFindByStudentIDSuccess() {
+	want := &proto.FindByStudentIDUserResponse{User: t.UserDto}
+
+	repo := &mock.RepositoryMock{}
+
+	repo.On("FindByStudentID", t.User.StudentID, &user.User{}).Return(t.User, nil)
+
+	srv := NewService(repo)
+	actual, err := srv.FindByStudentID(context.Background(), &proto.FindByStudentIDUserRequest{StudentId: t.UserDto.StudentID})
+
+	assert.Nil(t.T(), err)
+	assert.Equal(t.T(), want, actual)
+}
+
+func (t *UserServiceTest) TestFindByStudentIDNotFound() {
+	repo := &mock.RepositoryMock{}
+
+	repo.On("FindByStudentID", t.User.StudentID, &user.User{}).Return(nil, errors.New("Not found user"))
+
+	srv := NewService(repo)
+	actual, err := srv.FindByStudentID(context.Background(), &proto.FindByStudentIDUserRequest{StudentId: t.UserDto.StudentID})
+
+	st, ok := status.FromError(err)
+	assert.True(t.T(), ok)
+	assert.Nil(t.T(), actual)
+	assert.Equal(t.T(), codes.NotFound, st.Code())
+}

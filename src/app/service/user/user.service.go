@@ -18,6 +18,7 @@ type Service struct {
 
 type IRepository interface {
 	FindOne(string, *user.User) error
+	FindByStudentID(string, *user.User) error
 	Create(*user.User) error
 	Update(string, *user.User) error
 	Delete(string) error
@@ -37,6 +38,19 @@ func (s *Service) FindOne(_ context.Context, req *proto.FindOneUserRequest) (res
 	}
 
 	return &proto.FindOneUserResponse{User: RawToDto(&raw)}, nil
+}
+
+func (s *Service) FindByStudentID(_ context.Context, req *proto.FindByStudentIDUserRequest) (res *proto.FindByStudentIDUserResponse, err error) {
+	result := user.User{}
+
+	err = s.repo.FindByStudentID(req.StudentId, &result)
+	if err != nil {
+		return nil, status.Error(codes.NotFound, err.Error())
+	}
+
+	res = &proto.FindByStudentIDUserResponse{User: RawToDto(&result)}
+
+	return res, err
 }
 
 func (s *Service) Create(_ context.Context, req *proto.CreateUserRequest) (res *proto.CreateUserResponse, err error) {

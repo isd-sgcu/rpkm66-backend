@@ -19,6 +19,10 @@ func (r *Repository) FindOne(id string, result *user.User) error {
 	return r.db.First(&result, "id = ?", id).Error
 }
 
+func (r *Repository) FindByStudentID(sid string, result *user.User) error {
+	return r.db.First(&result, "student_id = ?", sid).Error
+}
+
 func (r *Repository) CreateOrUpdate(result *user.User) error {
 	if r.db.First(&result, "id = ?", result.ID.String()).Updates(&result).RowsAffected == 0 {
 		return r.db.Create(&result).Error

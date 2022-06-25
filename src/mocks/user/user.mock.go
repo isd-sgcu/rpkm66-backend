@@ -29,6 +29,16 @@ func (r *RepositoryMock) FindOne(id string, result *user.User) error {
 	return args.Error(1)
 }
 
+func (r *RepositoryMock) FindByStudentID(sid string, result *user.User) error {
+	args := r.Called(sid, result)
+
+	if args.Get(0) != nil {
+		*result = *args.Get(0).(*user.User)
+	}
+
+	return args.Error(1)
+}
+
 func (r *RepositoryMock) Create(in *user.User) error {
 	args := r.Called(in)
 
