@@ -1,5 +1,5 @@
 proto:
-	protoc --proto_path=src/proto --go_out=plugins=grpc:. user.proto
+	protoc --proto_path=src/proto --go_out=. --go-grpc_out=. user.proto
 
 test:
 	go vet ./...
