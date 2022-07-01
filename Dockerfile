@@ -28,7 +28,7 @@ FROM alpine AS master
 WORKDIR /app
 
 # Copy grpc_heath_prob
-COPY --from=base /bin/grpc_health_probe ./grpc_health_probe
+COPY --from=base /bin/grpc_health_probe ./
 
 # Copy execute file
 COPY --from=base /app/server ./
