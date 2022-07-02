@@ -6,7 +6,8 @@ require (
 	github.com/bxcodec/faker/v3 v3.8.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.1.2
-	github.com/pkg/errors v0.8.1
+	github.com/pkg/errors v0.9.1
+	github.com/rs/zerolog v1.27.0
 	github.com/spf13/viper v1.10.1
 	github.com/stretchr/testify v1.7.0
 	google.golang.org/grpc v1.47.0
@@ -27,6 +28,8 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
+	github.com/mattn/go-colorable v0.1.12 // indirect
+	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
@@ -37,7 +40,7 @@ require (
 	github.com/stretchr/objx v0.1.0 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
 	golang.org/x/net v0.0.0-20220617184016-355a448f1bc9 // indirect
-	golang.org/x/sys v0.0.0-20220615213510-4f61da869c0c // indirect
+	golang.org/x/sys v0.0.0-20220627191245-f75cf1eec38b // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20220617124728-180714bec0ad // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect

@@ -35,7 +35,7 @@ func (r *Repository) Create(in *user.User) error {
 }
 
 func (r *Repository) Update(id string, result *user.User) error {
-	return r.db.Where(id).Updates(&result).First(&result).Error
+	return r.db.Where(id, "id = ?", id).Updates(&result).First(&result, "id = ?", id).Error
 }
 
 func (r *Repository) Delete(id string) error {
