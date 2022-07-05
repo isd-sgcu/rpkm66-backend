@@ -14,7 +14,7 @@ env:
   IMAGE_TAG: ${{ github.sha }}
   GITOPS_REPO: isd-sgcu/rnkm65-gitOps
   GITOPS_BASE_PATH: environment
-  GITOPS_SERVICE_NAME: auth
+  GITOPS_SERVICE_NAME: backend
 
 jobs:
   build:
