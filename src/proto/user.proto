@@ -15,21 +15,22 @@ service UserService {
 
 message User{
   string id = 1;
-  string firstname = 2;
-  string lastname = 3;
-  string nickname = 4;
-  string studentID = 5;
-  string faculty = 6;
-  string year = 7;
-  string phone = 8;
-  string lineID = 9;
-  string email = 10;
-  string allergyFood = 11;
-  string foodRestriction = 12;
-  string allergyMedicine = 13;
-  string disease = 14;
-  string vaccineCertificateUrl = 15;
+  string title = 2;
+  string firstname = 3;
+  string lastname = 4;
+  string nickname = 5;
+  string studentID = 6;
+  string faculty = 7;
+  string year = 8;
+  string phone = 9;
+  string lineID = 10;
+  string email = 11;
+  string allergyFood = 12;
+  string foodRestriction = 13;
+  string allergyMedicine = 14;
+  string disease = 15;
   string imageUrl = 16;
+  bool canSelectBaan = 17;
 }
 
 // FindOne
