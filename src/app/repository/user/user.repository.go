@@ -24,7 +24,7 @@ func (r *Repository) FindByStudentID(sid string, result *user.User) error {
 }
 
 func (r *Repository) CreateOrUpdate(result *user.User) error {
-	if r.db.First(&result, "id = ?", result.ID.String()).Updates(&result).RowsAffected == 0 {
+	if r.db.Where("id = ?", result.ID.String()).Updates(&result).RowsAffected == 0 {
 		return r.db.Create(&result).Error
 	}
 	return nil
