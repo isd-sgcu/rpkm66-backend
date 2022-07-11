@@ -20,6 +20,5 @@ type User struct {
 	FoodRestriction string `json:"food_restriction" gorm:"type:tinytext"`
 	AllergyMedicine string `json:"allergy_medicine" gorm:"type:tinytext"`
 	Disease         string `json:"disease" gorm:"type:tinytext"`
-	ImageUrl        string `json:"image_url" gorm:"type:varchar(500)"`
 	CanSelectBaan   bool   `json:"can_select_baan"`
 }

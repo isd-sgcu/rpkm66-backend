@@ -22,7 +22,6 @@ func (s Seed) UserSeed1655751437484() error {
 			FoodRestriction: faker.Word(),
 			AllergyMedicine: faker.Word(),
 			Disease:         faker.Word(),
-			ImageUrl:        faker.URL(),
 		}
 		err := s.db.Create(&usr).Error
 
