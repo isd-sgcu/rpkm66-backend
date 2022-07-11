@@ -6,6 +6,7 @@ import (
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
 	"github.com/isd-sgcu/rnkm65-backend/src/proto"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
@@ -44,6 +45,40 @@ func (s *Service) FindOne(_ context.Context, req *proto.FindOneUserRequest) (res
 
 	url, err := s.fileSrv.GetSignedUrl(req.Id)
 	if err != nil {
+		st, ok := status.FromError(err)
+		if ok {
+			switch st.Code() {
+			case codes.NotFound:
+				log.Error().
+					Err(err).
+					Str("service", "user").
+					Str("module", "find one").
+					Msg("Something wrong")
+				return &proto.FindOneUserResponse{User: RawToDto(&raw, "")}, nil
+			case codes.Unavailable:
+				log.Error().
+					Err(err).
+					Str("service", "user").
+					Str("module", "find one").
+					Msg("Something wrong")
+				return nil, err
+
+			default:
+				log.Error().
+					Err(err).
+					Str("service", "user").
+					Str("module", "find one").
+					Msg("Error while connecting to service")
+				return nil, err
+			}
+		}
+
+		log.Error().
+			Err(err).
+			Str("service", "user").
+			Str("module", "find one").
+			Msg("Error while connecting to service")
+
 		return nil, err
 	}
 

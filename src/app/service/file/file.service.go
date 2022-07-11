@@ -2,9 +2,8 @@ package file
 
 import (
 	"github.com/isd-sgcu/rnkm65-backend/src/proto"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"time"
 )
 
@@ -22,7 +21,12 @@ func (s *Service) GetSignedUrl(uid string) (string, error) {
 
 	res, err := s.client.GetSignedUrl(ctx, &proto.GetSignedUrlRequest{UserId: uid})
 	if err != nil {
-		return "", status.Error(codes.Unavailable, "Error while connecting to the file service")
+		log.Error().
+			Err(err).
+			Str("service", "file").
+			Str("module", "get signed url").
+			Msg("Error while connecting to service")
+		return "", err
 	}
 
 	return res.Url, nil

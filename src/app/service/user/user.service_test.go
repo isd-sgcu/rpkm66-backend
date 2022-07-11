@@ -155,6 +155,23 @@ func (t *UserServiceTest) TestFindOneSignUrlErr() {
 	assert.Equal(t.T(), codes.Unavailable, st.Code())
 }
 
+func (t *UserServiceTest) TestFindOneSignUrlNotFound() {
+	want := &proto.FindOneUserResponse{User: t.UserDto}
+
+	repo := &mock.RepositoryMock{}
+	repo.On("FindOne", t.User.ID.String(), &user.User{}).Return(t.User, nil)
+
+	fileSrv := &fMock.ServiceMock{}
+	fileSrv.On("GetSignedUrl", t.User.ID.String()).Return("", status.Error(codes.NotFound, "Not found file"))
+
+	srv := NewService(repo, fileSrv)
+
+	actual, err := srv.FindOne(context.Background(), &proto.FindOneUserRequest{Id: t.User.ID.String()})
+
+	assert.Nil(t.T(), err)
+	assert.Equal(t.T(), want, actual)
+}
+
 func (t *UserServiceTest) TestFindOneNotFound() {
 	repo := &mock.RepositoryMock{}
 	repo.On("FindOne", t.User.ID.String(), &user.User{}).Return(nil, errors.New("Not found user"))
