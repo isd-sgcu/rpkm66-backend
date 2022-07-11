@@ -13,7 +13,8 @@ import (
 )
 
 type Service struct {
-	repo IRepository
+	repo    IRepository
+	fileSrv IFileService
 }
 
 type IRepository interface {
@@ -25,8 +26,12 @@ type IRepository interface {
 	CreateOrUpdate(*user.User) error
 }
 
-func NewService(repo IRepository) *Service {
-	return &Service{repo: repo}
+type IFileService interface {
+	GetSignedUrl(string) (string, error)
+}
+
+func NewService(repo IRepository, fileSrv IFileService) *Service {
+	return &Service{repo: repo, fileSrv: fileSrv}
 }
 
 func (s *Service) FindOne(_ context.Context, req *proto.FindOneUserRequest) (res *proto.FindOneUserResponse, err error) {
@@ -37,7 +42,12 @@ func (s *Service) FindOne(_ context.Context, req *proto.FindOneUserRequest) (res
 		return nil, status.Error(codes.NotFound, "user not found")
 	}
 
-	return &proto.FindOneUserResponse{User: RawToDto(&raw)}, nil
+	url, err := s.fileSrv.GetSignedUrl(req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &proto.FindOneUserResponse{User: RawToDto(&raw, url)}, nil
 }
 
 func (s *Service) FindByStudentID(_ context.Context, req *proto.FindByStudentIDUserRequest) (res *proto.FindByStudentIDUserResponse, err error) {
@@ -48,7 +58,7 @@ func (s *Service) FindByStudentID(_ context.Context, req *proto.FindByStudentIDU
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 
-	res = &proto.FindByStudentIDUserResponse{User: RawToDto(&result)}
+	res = &proto.FindByStudentIDUserResponse{User: RawToDto(&result, "")}
 
 	return res, err
 }
@@ -61,7 +71,7 @@ func (s *Service) Create(_ context.Context, req *proto.CreateUserRequest) (res *
 		return nil, status.Error(codes.Internal, "failed to create user")
 	}
 
-	return &proto.CreateUserResponse{User: RawToDto(raw)}, nil
+	return &proto.CreateUserResponse{User: RawToDto(raw, "")}, nil
 }
 
 func (s *Service) CreateOrUpdate(_ context.Context, req *proto.CreateOrUpdateUserRequest) (result *proto.CreateOrUpdateUserResponse, err error) {
@@ -76,7 +86,7 @@ func (s *Service) CreateOrUpdate(_ context.Context, req *proto.CreateOrUpdateUse
 		return nil, status.Error(codes.Internal, "failed to create user")
 	}
 
-	return &proto.CreateOrUpdateUserResponse{User: RawToDto(raw)}, nil
+	return &proto.CreateOrUpdateUserResponse{User: RawToDto(raw, "")}, nil
 }
 
 func (s *Service) Update(_ context.Context, req *proto.UpdateUserRequest) (res *proto.UpdateUserResponse, err error) {
@@ -90,7 +100,7 @@ func (s *Service) Update(_ context.Context, req *proto.UpdateUserRequest) (res *
 		return nil, status.Error(codes.NotFound, "user not found")
 	}
 
-	return &proto.UpdateUserResponse{User: RawToDto(raw)}, nil
+	return &proto.UpdateUserResponse{User: RawToDto(raw, "")}, nil
 }
 
 func (s *Service) Delete(_ context.Context, req *proto.DeleteUserRequest) (res *proto.DeleteUserResponse, err error) {
@@ -133,11 +143,10 @@ func DtoToRaw(in *proto.User) (result *user.User, err error) {
 		FoodRestriction: in.FoodRestriction,
 		AllergyMedicine: in.AllergyMedicine,
 		Disease:         in.Disease,
-		ImageUrl:        in.ImageUrl,
 		CanSelectBaan:   in.CanSelectBaan,
 	}, nil
 }
-func RawToDto(in *user.User) *proto.User {
+func RawToDto(in *user.User, imgUrl string) *proto.User {
 	return &proto.User{
 		Id:              in.ID.String(),
 		Title:           in.Title,
@@ -154,7 +163,7 @@ func RawToDto(in *user.User) *proto.User {
 		FoodRestriction: in.FoodRestriction,
 		AllergyMedicine: in.AllergyMedicine,
 		Disease:         in.Disease,
-		ImageUrl:        in.ImageUrl,
+		ImageUrl:        imgUrl,
 		CanSelectBaan:   in.CanSelectBaan,
 	}
 }

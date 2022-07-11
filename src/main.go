@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	ur "github.com/isd-sgcu/rnkm65-backend/src/app/repository/user"
+	fSrv "github.com/isd-sgcu/rnkm65-backend/src/app/service/file"
 	us "github.com/isd-sgcu/rnkm65-backend/src/app/service/user"
 	"github.com/isd-sgcu/rnkm65-backend/src/config"
 	"github.com/isd-sgcu/rnkm65-backend/src/database"
@@ -12,6 +13,7 @@ import (
 	"github.com/isd-sgcu/rnkm65-backend/src/proto"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
@@ -133,10 +135,21 @@ func main() {
 			Msg("Failed to start service")
 	}
 
+	fileConn, err := grpc.Dial(conf.Service.File, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Str("service", "rnkm-file").
+			Msg("Cannot connect to service")
+	}
+
 	grpcServer := grpc.NewServer()
 
+	fileClient := proto.NewFileServiceClient(fileConn)
+	fileSrv := fSrv.NewService(fileClient)
+
 	usrRepo := ur.NewRepository(db)
-	usrSvc := us.NewService(usrRepo)
+	usrSvc := us.NewService(usrRepo, fileSrv)
 
 	grpc_health_v1.RegisterHealthServer(grpcServer, health.NewServer())
 	proto.RegisterUserServiceServer(grpcServer, usrSvc)

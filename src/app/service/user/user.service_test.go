@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
+	fMock "github.com/isd-sgcu/rnkm65-backend/src/mocks/file"
 	mock "github.com/isd-sgcu/rnkm65-backend/src/mocks/user"
 	"github.com/isd-sgcu/rnkm65-backend/src/proto"
 	"github.com/pkg/errors"
@@ -52,7 +53,6 @@ func (t *UserServiceTest) SetupTest() {
 		FoodRestriction: faker.Word(),
 		AllergyMedicine: faker.Word(),
 		Disease:         faker.Word(),
-		ImageUrl:        faker.URL(),
 		CanSelectBaan:   true,
 	}
 
@@ -72,7 +72,6 @@ func (t *UserServiceTest) SetupTest() {
 		FoodRestriction: t.User.FoodRestriction,
 		AllergyMedicine: t.User.AllergyMedicine,
 		Disease:         t.User.Disease,
-		ImageUrl:        t.User.ImageUrl,
 		CanSelectBaan:   t.User.CanSelectBaan,
 	}
 
@@ -92,7 +91,6 @@ func (t *UserServiceTest) SetupTest() {
 			FoodRestriction: t.User.FoodRestriction,
 			AllergyMedicine: t.User.AllergyMedicine,
 			Disease:         t.User.Disease,
-			ImageUrl:        t.User.ImageUrl,
 			CanSelectBaan:   t.User.CanSelectBaan,
 		},
 	}
@@ -114,20 +112,25 @@ func (t *UserServiceTest) SetupTest() {
 			FoodRestriction: t.User.FoodRestriction,
 			AllergyMedicine: t.User.AllergyMedicine,
 			Disease:         t.User.Disease,
-			ImageUrl:        t.User.ImageUrl,
 			CanSelectBaan:   t.User.CanSelectBaan,
 		},
 	}
 }
 
 func (t *UserServiceTest) TestFindOneSuccess() {
+	url := faker.URL()
+
+	t.UserDto.ImageUrl = url
+
 	want := &proto.FindOneUserResponse{User: t.UserDto}
 
 	repo := &mock.RepositoryMock{}
-
 	repo.On("FindOne", t.User.ID.String(), &user.User{}).Return(t.User, nil)
 
-	srv := NewService(repo)
+	fileSrv := &fMock.ServiceMock{}
+	fileSrv.On("GetSignedUrl", t.User.ID.String()).Return(url, nil)
+
+	srv := NewService(repo, fileSrv)
 
 	actual, err := srv.FindOne(context.Background(), &proto.FindOneUserRequest{Id: t.User.ID.String()})
 
@@ -135,12 +138,30 @@ func (t *UserServiceTest) TestFindOneSuccess() {
 	assert.Equal(t.T(), want, actual)
 }
 
+func (t *UserServiceTest) TestFindOneSignUrlErr() {
+	repo := &mock.RepositoryMock{}
+	repo.On("FindOne", t.User.ID.String(), &user.User{}).Return(t.User, nil)
+
+	fileSrv := &fMock.ServiceMock{}
+	fileSrv.On("GetSignedUrl", t.User.ID.String()).Return("", status.Error(codes.Unavailable, "Cannot get signed url"))
+
+	srv := NewService(repo, fileSrv)
+
+	actual, err := srv.FindOne(context.Background(), &proto.FindOneUserRequest{Id: t.User.ID.String()})
+
+	st, ok := status.FromError(err)
+	assert.True(t.T(), ok)
+	assert.Nil(t.T(), actual)
+	assert.Equal(t.T(), codes.Unavailable, st.Code())
+}
+
 func (t *UserServiceTest) TestFindOneNotFound() {
 	repo := &mock.RepositoryMock{}
-
 	repo.On("FindOne", t.User.ID.String(), &user.User{}).Return(nil, errors.New("Not found user"))
 
-	srv := NewService(repo)
+	fileSrv := &fMock.ServiceMock{}
+
+	srv := NewService(repo, fileSrv)
 
 	actual, err := srv.FindOne(context.Background(), &proto.FindOneUserRequest{Id: t.User.ID.String()})
 
@@ -171,13 +192,14 @@ func (t *UserServiceTest) TestCreateSuccess() {
 		FoodRestriction: t.User.FoodRestriction,
 		AllergyMedicine: t.User.AllergyMedicine,
 		Disease:         t.User.Disease,
-		ImageUrl:        t.User.ImageUrl,
 		CanSelectBaan:   t.User.CanSelectBaan,
 	}
 
 	repo.On("Create", in).Return(t.User, nil)
 
-	srv := NewService(repo)
+	fileSrv := &fMock.ServiceMock{}
+
+	srv := NewService(repo, fileSrv)
 
 	actual, err := srv.Create(context.Background(), t.CreateUserReqMock)
 
@@ -203,13 +225,14 @@ func (t *UserServiceTest) TestCreateInternalErr() {
 		FoodRestriction: t.User.FoodRestriction,
 		AllergyMedicine: t.User.AllergyMedicine,
 		Disease:         t.User.Disease,
-		ImageUrl:        t.User.ImageUrl,
 		CanSelectBaan:   t.User.CanSelectBaan,
 	}
 
 	repo.On("Create", in).Return(nil, errors.New("something wrong"))
 
-	srv := NewService(repo)
+	fileSrv := &fMock.ServiceMock{}
+
+	srv := NewService(repo, fileSrv)
 
 	actual, err := srv.Create(context.Background(), t.CreateUserReqMock)
 
@@ -227,7 +250,9 @@ func (t *UserServiceTest) TestUpdateSuccess() {
 
 	repo.On("Update", t.User.ID.String(), t.User).Return(t.User, nil)
 
-	srv := NewService(repo)
+	fileSrv := &fMock.ServiceMock{}
+
+	srv := NewService(repo, fileSrv)
 	actual, err := srv.Update(context.Background(), t.UpdateUserReqMock)
 
 	assert.Nil(t.T(), err)
@@ -238,7 +263,9 @@ func (t *UserServiceTest) TestUpdateNotFound() {
 	repo := &mock.RepositoryMock{}
 	repo.On("Update", t.User.ID.String(), t.User).Return(nil, errors.New("Not found user"))
 
-	srv := NewService(repo)
+	fileSrv := &fMock.ServiceMock{}
+
+	srv := NewService(repo, fileSrv)
 	actual, err := srv.Update(context.Background(), t.UpdateUserReqMock)
 
 	st, ok := status.FromError(err)
@@ -252,7 +279,9 @@ func (t *UserServiceTest) TestUpdateMalformed() {
 	repo := &mock.RepositoryMock{}
 	repo.On("Update", t.User.ID.String(), t.User).Return(nil, errors.New("Not found user"))
 
-	srv := NewService(repo)
+	fileSrv := &fMock.ServiceMock{}
+
+	srv := NewService(repo, fileSrv)
 
 	t.UpdateUserReqMock.User.Id = "abc"
 
@@ -272,7 +301,9 @@ func (t *UserServiceTest) TestDeleteSuccess() {
 
 	repo.On("Delete", t.User.ID.String()).Return(nil)
 
-	srv := NewService(repo)
+	fileSrv := &fMock.ServiceMock{}
+
+	srv := NewService(repo, fileSrv)
 	actual, err := srv.Delete(context.Background(), &proto.DeleteUserRequest{Id: t.UserDto.Id})
 
 	assert.Nil(t.T(), err)
@@ -284,7 +315,9 @@ func (t *UserServiceTest) TestDeleteNotFound() {
 
 	repo.On("Delete", t.User.ID.String()).Return(errors.New("Not found user"))
 
-	srv := NewService(repo)
+	fileSrv := &fMock.ServiceMock{}
+
+	srv := NewService(repo, fileSrv)
 	actual, err := srv.Delete(context.Background(), &proto.DeleteUserRequest{Id: t.UserDto.Id})
 
 	st, ok := status.FromError(err)
@@ -300,7 +333,9 @@ func (t *UserServiceTest) TestCreateOrUpdateSuccess() {
 
 	repo.On("CreateOrUpdate", t.User).Return(t.User, nil)
 
-	srv := NewService(repo)
+	fileSrv := &fMock.ServiceMock{}
+
+	srv := NewService(repo, fileSrv)
 	actual, err := srv.CreateOrUpdate(context.Background(), &proto.CreateOrUpdateUserRequest{User: t.UserDto})
 
 	assert.Nil(t.T(), err)
@@ -314,7 +349,9 @@ func (t *UserServiceTest) TestCreateOrUpdateMalformedID() {
 
 	t.UserDto.Id = "abc"
 
-	srv := NewService(repo)
+	fileSrv := &fMock.ServiceMock{}
+
+	srv := NewService(repo, fileSrv)
 	actual, err := srv.CreateOrUpdate(context.Background(), &proto.CreateOrUpdateUserRequest{User: t.UserDto})
 
 	st, ok := status.FromError(err)
@@ -328,7 +365,9 @@ func (t *UserServiceTest) TestCreateOrUpdateInternalErr() {
 
 	repo.On("CreateOrUpdate", t.User).Return(nil, errors.New("Something wrong"))
 
-	srv := NewService(repo)
+	fileSrv := &fMock.ServiceMock{}
+
+	srv := NewService(repo, fileSrv)
 	actual, err := srv.CreateOrUpdate(context.Background(), &proto.CreateOrUpdateUserRequest{User: t.UserDto})
 
 	st, ok := status.FromError(err)
@@ -344,7 +383,9 @@ func (t *UserServiceTest) TestFindByStudentIDSuccess() {
 
 	repo.On("FindByStudentID", t.User.StudentID, &user.User{}).Return(t.User, nil)
 
-	srv := NewService(repo)
+	fileSrv := &fMock.ServiceMock{}
+
+	srv := NewService(repo, fileSrv)
 	actual, err := srv.FindByStudentID(context.Background(), &proto.FindByStudentIDUserRequest{StudentId: t.UserDto.StudentID})
 
 	assert.Nil(t.T(), err)
@@ -356,7 +397,9 @@ func (t *UserServiceTest) TestFindByStudentIDNotFound() {
 
 	repo.On("FindByStudentID", t.User.StudentID, &user.User{}).Return(nil, errors.New("Not found user"))
 
-	srv := NewService(repo)
+	fileSrv := &fMock.ServiceMock{}
+
+	srv := NewService(repo, fileSrv)
 	actual, err := srv.FindByStudentID(context.Background(), &proto.FindByStudentIDUserRequest{StudentId: t.UserDto.StudentID})
 
 	st, ok := status.FromError(err)
