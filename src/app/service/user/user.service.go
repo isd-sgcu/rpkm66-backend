@@ -23,6 +23,7 @@ type IRepository interface {
 	FindByStudentID(string, *user.User) error
 	Create(*user.User) error
 	Update(string, *user.User) error
+	Verify(string) error
 	Delete(string) error
 	CreateOrUpdate(*user.User) error
 }
@@ -55,6 +56,7 @@ func (s *Service) FindOne(_ context.Context, req *proto.FindOneUserRequest) (res
 					Str("module", "find one").
 					Msg("Something wrong")
 				return &proto.FindOneUserResponse{User: RawToDto(&raw, "")}, nil
+
 			case codes.Unavailable:
 				log.Error().
 					Err(err).
@@ -122,6 +124,19 @@ func (s *Service) CreateOrUpdate(_ context.Context, req *proto.CreateOrUpdateUse
 	}
 
 	return &proto.CreateOrUpdateUserResponse{User: RawToDto(raw, "")}, nil
+}
+
+func (s *Service) Verify(_ context.Context, req *proto.VerifyUserRequest) (res *proto.VerifyUserResponse, err error) {
+	err = s.repo.Verify(req.StudentId)
+	if err != nil {
+		log.Error().Err(err).
+			Str("service", "user").
+			Str("module", "verify").
+			Msgf("Cannot verify %s", req.StudentId)
+		return nil, status.Error(codes.NotFound, "user not found")
+	}
+
+	return &proto.VerifyUserResponse{Success: true}, nil
 }
 
 func (s *Service) Update(_ context.Context, req *proto.UpdateUserRequest) (res *proto.UpdateUserResponse, err error) {

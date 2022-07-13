@@ -260,6 +260,39 @@ func (t *UserServiceTest) TestCreateInternalErr() {
 	assert.Equal(t.T(), codes.Internal, st.Code())
 }
 
+func (t *UserServiceTest) TestVerifySuccess() {
+	want := &proto.VerifyUserResponse{Success: true}
+
+	repo := &mock.RepositoryMock{}
+
+	repo.On("Verify", t.User.ID.String()).Return(nil)
+
+	fileSrv := &fMock.ServiceMock{}
+
+	srv := NewService(repo, fileSrv)
+	actual, err := srv.Verify(context.Background(), &proto.VerifyUserRequest{StudentId: t.UserDto.Id})
+
+	assert.Nil(t.T(), err)
+	assert.Equal(t.T(), want, actual)
+}
+
+func (t *UserServiceTest) TestVerifyNotFound() {
+	repo := &mock.RepositoryMock{}
+
+	repo.On("Verify", t.User.ID.String()).Return(errors.New("Not found user"))
+
+	fileSrv := &fMock.ServiceMock{}
+
+	srv := NewService(repo, fileSrv)
+	actual, err := srv.Verify(context.Background(), &proto.VerifyUserRequest{StudentId: t.UserDto.Id})
+
+	st, ok := status.FromError(err)
+
+	assert.True(t.T(), ok)
+	assert.Nil(t.T(), actual)
+	assert.Equal(t.T(), codes.NotFound, st.Code())
+}
+
 func (t *UserServiceTest) TestUpdateSuccess() {
 	want := &proto.UpdateUserResponse{User: t.UserDto}
 
