@@ -49,6 +49,12 @@ func (r *RepositoryMock) Create(in *user.User) error {
 	return args.Error(1)
 }
 
+func (r *RepositoryMock) Verify(studentId string) error {
+	args := r.Called(studentId)
+
+	return args.Error(0)
+}
+
 func (r *RepositoryMock) Update(id string, result *user.User) error {
 	args := r.Called(id, result)
 

@@ -26,6 +26,7 @@ type UserServiceClient interface {
 	FindByStudentID(ctx context.Context, in *FindByStudentIDUserRequest, opts ...grpc.CallOption) (*FindByStudentIDUserResponse, error)
 	Create(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
 	Update(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error)
+	Verify(ctx context.Context, in *VerifyUserRequest, opts ...grpc.CallOption) (*VerifyUserResponse, error)
 	Delete(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error)
 	CreateOrUpdate(ctx context.Context, in *CreateOrUpdateUserRequest, opts ...grpc.CallOption) (*CreateOrUpdateUserResponse, error)
 }
@@ -74,6 +75,15 @@ func (c *userServiceClient) Update(ctx context.Context, in *UpdateUserRequest, o
 	return out, nil
 }
 
+func (c *userServiceClient) Verify(ctx context.Context, in *VerifyUserRequest, opts ...grpc.CallOption) (*VerifyUserResponse, error) {
+	out := new(VerifyUserResponse)
+	err := c.cc.Invoke(ctx, "/user.UserService/Verify", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *userServiceClient) Delete(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error) {
 	out := new(DeleteUserResponse)
 	err := c.cc.Invoke(ctx, "/user.UserService/Delete", in, out, opts...)
@@ -100,6 +110,7 @@ type UserServiceServer interface {
 	FindByStudentID(context.Context, *FindByStudentIDUserRequest) (*FindByStudentIDUserResponse, error)
 	Create(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
 	Update(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error)
+	Verify(context.Context, *VerifyUserRequest) (*VerifyUserResponse, error)
 	Delete(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error)
 	CreateOrUpdate(context.Context, *CreateOrUpdateUserRequest) (*CreateOrUpdateUserResponse, error)
 }
@@ -119,6 +130,9 @@ func (UnimplementedUserServiceServer) Create(context.Context, *CreateUserRequest
 }
 func (UnimplementedUserServiceServer) Update(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
+func (UnimplementedUserServiceServer) Verify(context.Context, *VerifyUserRequest) (*VerifyUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Verify not implemented")
 }
 func (UnimplementedUserServiceServer) Delete(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
@@ -210,6 +224,24 @@ func _UserService_Update_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_Verify_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).Verify(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/Verify",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).Verify(ctx, req.(*VerifyUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _UserService_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteUserRequest)
 	if err := dec(in); err != nil {
@@ -268,6 +300,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Update",
 			Handler:    _UserService_Update_Handler,
+		},
+		{
+			MethodName: "Verify",
+			Handler:    _UserService_Verify_Handler,
 		},
 		{
 			MethodName: "Delete",
