@@ -215,5 +215,6 @@ func RawToDto(in *user.User, imgUrl string) *proto.User {
 		Disease:         in.Disease,
 		ImageUrl:        imgUrl,
 		CanSelectBaan:   in.CanSelectBaan,
+		IsVerify:        in.IsVerify,
 	}
 }
