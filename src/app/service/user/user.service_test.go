@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
+	"github.com/isd-sgcu/rnkm65-backend/src/app/utils"
 	fMock "github.com/isd-sgcu/rnkm65-backend/src/mocks/file"
 	mock "github.com/isd-sgcu/rnkm65-backend/src/mocks/user"
 	"github.com/isd-sgcu/rnkm65-backend/src/proto"
@@ -53,7 +54,8 @@ func (t *UserServiceTest) SetupTest() {
 		FoodRestriction: faker.Word(),
 		AllergyMedicine: faker.Word(),
 		Disease:         faker.Word(),
-		CanSelectBaan:   true,
+		CanSelectBaan:   utils.BoolAdr(true),
+		IsVerify:        utils.BoolAdr(true),
 	}
 
 	t.UserDto = &proto.User{
@@ -72,7 +74,8 @@ func (t *UserServiceTest) SetupTest() {
 		FoodRestriction: t.User.FoodRestriction,
 		AllergyMedicine: t.User.AllergyMedicine,
 		Disease:         t.User.Disease,
-		CanSelectBaan:   t.User.CanSelectBaan,
+		CanSelectBaan:   *t.User.CanSelectBaan,
+		IsVerify:        *t.User.IsVerify,
 	}
 
 	t.CreateUserReqMock = &proto.CreateUserRequest{
@@ -91,7 +94,8 @@ func (t *UserServiceTest) SetupTest() {
 			FoodRestriction: t.User.FoodRestriction,
 			AllergyMedicine: t.User.AllergyMedicine,
 			Disease:         t.User.Disease,
-			CanSelectBaan:   t.User.CanSelectBaan,
+			CanSelectBaan:   *t.User.CanSelectBaan,
+			IsVerify:        *t.User.IsVerify,
 		},
 	}
 
@@ -112,7 +116,8 @@ func (t *UserServiceTest) SetupTest() {
 			FoodRestriction: t.User.FoodRestriction,
 			AllergyMedicine: t.User.AllergyMedicine,
 			Disease:         t.User.Disease,
-			CanSelectBaan:   t.User.CanSelectBaan,
+			CanSelectBaan:   *t.User.CanSelectBaan,
+			IsVerify:        *t.User.IsVerify,
 		},
 	}
 }
@@ -296,9 +301,12 @@ func (t *UserServiceTest) TestVerifyNotFound() {
 func (t *UserServiceTest) TestUpdateSuccess() {
 	want := &proto.UpdateUserResponse{User: t.UserDto}
 
+	userIn := *t.User
+	userIn.IsVerify = nil
+
 	repo := &mock.RepositoryMock{}
 
-	repo.On("Update", t.User.ID.String(), t.User).Return(t.User, nil)
+	repo.On("Update", t.User.ID.String(), &userIn).Return(t.User, nil)
 
 	fileSrv := &fMock.ServiceMock{}
 
@@ -310,8 +318,11 @@ func (t *UserServiceTest) TestUpdateSuccess() {
 }
 
 func (t *UserServiceTest) TestUpdateNotFound() {
+	userIn := *t.User
+	userIn.IsVerify = nil
+
 	repo := &mock.RepositoryMock{}
-	repo.On("Update", t.User.ID.String(), t.User).Return(nil, errors.New("Not found user"))
+	repo.On("Update", t.User.ID.String(), &userIn).Return(nil, errors.New("Not found user"))
 
 	fileSrv := &fMock.ServiceMock{}
 
@@ -326,8 +337,11 @@ func (t *UserServiceTest) TestUpdateNotFound() {
 }
 
 func (t *UserServiceTest) TestUpdateMalformed() {
+	userIn := *t.User
+	userIn.IsVerify = nil
+
 	repo := &mock.RepositoryMock{}
-	repo.On("Update", t.User.ID.String(), t.User).Return(nil, errors.New("Not found user"))
+	repo.On("Update", t.User.ID.String(), userIn).Return(nil, errors.New("Not found user"))
 
 	fileSrv := &fMock.ServiceMock{}
 
@@ -377,11 +391,14 @@ func (t *UserServiceTest) TestDeleteNotFound() {
 }
 
 func (t *UserServiceTest) TestCreateOrUpdateSuccess() {
+	userIn := *t.User
+	userIn.IsVerify = nil
+
 	want := &proto.CreateOrUpdateUserResponse{User: t.UserDto}
 
 	repo := &mock.RepositoryMock{}
 
-	repo.On("CreateOrUpdate", t.User).Return(t.User, nil)
+	repo.On("CreateOrUpdate", &userIn).Return(t.User, nil)
 
 	fileSrv := &fMock.ServiceMock{}
 
@@ -411,9 +428,12 @@ func (t *UserServiceTest) TestCreateOrUpdateMalformedID() {
 }
 
 func (t *UserServiceTest) TestCreateOrUpdateInternalErr() {
+	userIn := *t.User
+	userIn.IsVerify = nil
+
 	repo := &mock.RepositoryMock{}
 
-	repo.On("CreateOrUpdate", t.User).Return(nil, errors.New("Something wrong"))
+	repo.On("CreateOrUpdate", &userIn).Return(nil, errors.New("Something wrong"))
 
 	fileSrv := &fMock.ServiceMock{}
 

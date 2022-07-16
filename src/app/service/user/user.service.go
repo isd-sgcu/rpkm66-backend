@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
+	"github.com/isd-sgcu/rnkm65-backend/src/app/utils"
 	"github.com/isd-sgcu/rnkm65-backend/src/proto"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
@@ -193,10 +194,19 @@ func DtoToRaw(in *proto.User) (result *user.User, err error) {
 		FoodRestriction: in.FoodRestriction,
 		AllergyMedicine: in.AllergyMedicine,
 		Disease:         in.Disease,
-		CanSelectBaan:   in.CanSelectBaan,
+		CanSelectBaan:   &in.CanSelectBaan,
 	}, nil
 }
+
 func RawToDto(in *user.User, imgUrl string) *proto.User {
+	if in.IsVerify == nil {
+		in.IsVerify = utils.BoolAdr(false)
+	}
+
+	if in.CanSelectBaan == nil {
+		in.CanSelectBaan = utils.BoolAdr(false)
+	}
+
 	return &proto.User{
 		Id:              in.ID.String(),
 		Title:           in.Title,
@@ -214,7 +224,7 @@ func RawToDto(in *user.User, imgUrl string) *proto.User {
 		AllergyMedicine: in.AllergyMedicine,
 		Disease:         in.Disease,
 		ImageUrl:        imgUrl,
-		CanSelectBaan:   in.CanSelectBaan,
-		IsVerify:        in.IsVerify,
+		CanSelectBaan:   *in.CanSelectBaan,
+		IsVerify:        *in.IsVerify,
 	}
 }
