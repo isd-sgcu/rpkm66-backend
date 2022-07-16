@@ -124,6 +124,12 @@ func (s *Service) CreateOrUpdate(_ context.Context, req *proto.CreateOrUpdateUse
 		return nil, status.Error(codes.Internal, "failed to create user")
 	}
 
+	log.Info().
+		Str("service", "user").
+		Str("module", "create or update").
+		Str("student_id", raw.StudentID).
+		Msg("Successfully create or update the user")
+
 	return &proto.CreateOrUpdateUserResponse{User: RawToDto(raw, "")}, nil
 }
 
@@ -133,9 +139,16 @@ func (s *Service) Verify(_ context.Context, req *proto.VerifyUserRequest) (res *
 		log.Error().Err(err).
 			Str("service", "user").
 			Str("module", "verify").
-			Msgf("Cannot verify %s", req.StudentId)
+			Str("student_id", req.StudentId).
+			Msgf("Cannot verify (not found)")
 		return nil, status.Error(codes.NotFound, "user not found")
 	}
+
+	log.Info().
+		Str("service", "user").
+		Str("module", "create or update").
+		Str("student_id", req.StudentId).
+		Msg("Successfully create or update the user")
 
 	return &proto.VerifyUserResponse{Success: true}, nil
 }
