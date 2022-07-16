@@ -3,6 +3,8 @@ package seed
 import (
 	"github.com/bxcodec/faker/v3"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
+	"strconv"
+	"time"
 )
 
 func (s Seed) UserSeed1655751437484() error {
@@ -12,7 +14,7 @@ func (s Seed) UserSeed1655751437484() error {
 			Firstname:       faker.FirstName(),
 			Lastname:        faker.LastName(),
 			Nickname:        faker.Name(),
-			StudentID:       faker.Word(),
+			StudentID:       faker.Word() + strconv.Itoa(int(time.Now().Unix())),
 			Faculty:         faker.Word(),
 			Year:            faker.Word(),
 			Phone:           faker.Phonenumber(),

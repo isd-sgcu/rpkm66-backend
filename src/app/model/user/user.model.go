@@ -20,6 +20,6 @@ type User struct {
 	FoodRestriction string `json:"food_restriction" gorm:"type:tinytext"`
 	AllergyMedicine string `json:"allergy_medicine" gorm:"type:tinytext"`
 	Disease         string `json:"disease" gorm:"type:tinytext"`
-	CanSelectBaan   bool   `json:"can_select_baan"`
-	IsVerify        bool   `json:"is_verify"`
+	CanSelectBaan   *bool  `json:"can_select_baan"`
+	IsVerify        *bool  `json:"is_verify"`
 }
