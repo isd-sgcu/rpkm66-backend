@@ -33,6 +33,7 @@ message User{
   string imageUrl = 16;
   bool canSelectBaan = 17;
   bool isVerify = 18;
+  string groupId = 19;
 }
 
 // FindOne

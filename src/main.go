@@ -4,8 +4,10 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	grpRepo "github.com/isd-sgcu/rnkm65-backend/src/app/repository/group"
 	ur "github.com/isd-sgcu/rnkm65-backend/src/app/repository/user"
 	fSrv "github.com/isd-sgcu/rnkm65-backend/src/app/service/file"
+	grpService "github.com/isd-sgcu/rnkm65-backend/src/app/service/group"
 	us "github.com/isd-sgcu/rnkm65-backend/src/app/service/user"
 	"github.com/isd-sgcu/rnkm65-backend/src/config"
 	"github.com/isd-sgcu/rnkm65-backend/src/database"
@@ -151,9 +153,12 @@ func main() {
 	usrRepo := ur.NewRepository(db)
 	usrSvc := us.NewService(usrRepo, fileSrv)
 
+	groupRepo := grpRepo.NewRepository(db)
+	grpSvc := grpService.NewService(groupRepo)
+
 	grpc_health_v1.RegisterHealthServer(grpcServer, health.NewServer())
 	proto.RegisterUserServiceServer(grpcServer, usrSvc)
-
+	proto.RegisterGroupServiceServer(grpcServer, grpSvc)
 	reflection.Register(grpcServer)
 	go func() {
 		log.Info().

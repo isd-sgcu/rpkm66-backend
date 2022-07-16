@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+package group;
+
+import "user.proto";
+
+option go_package = "src/proto";
+
+service GroupService {
+  rpc FindByToken(FindByTokenGroupRequest) returns (FindByTokenGroupResponse) {}
+  rpc Create(CreateGroupRequest) returns (CreateGroupResponse) {}
+  rpc Update(UpdateGroupRequest) returns (UpdateGroupResponse) {}
+  rpc Join(JoinGroupRequest) returns (JoinGroupResponse) {}
+  rpc DeleteMember(DeleteMemberGroupRequest) returns (DeleteMemberGroupResponse){}
+  rpc Leave(LeaveGroupRequest) returns (LeaveGroupResponse){}
+}
+
+message Group{
+  string id = 1;
+  string leaderID = 2;
+  string token = 3;
+  repeated user.User members = 4;
+}
+
+// Find By Token
+
+message FindByTokenGroupRequest{
+  string token = 1;
+}
+
+message FindByTokenGroupResponse{
+  Group group = 1;
+}
+
+// Create
+
+message CreateGroupRequest{
+  string userId = 1;
+}
+
+message CreateGroupResponse{
+  Group group = 1;
+}
+
+// Update
+
+message UpdateGroupRequest{
+  Group group = 1;
+  string leaderId = 2;
+}
+
+message UpdateGroupResponse{
+  Group group = 1;
+}
+
+//Join
+
+message JoinGroupRequest{
+  string token = 1;
+  string userId = 2;
+  bool isLeader = 3;
+  int32 members = 4;
+}
+
+message JoinGroupResponse{
+  Group group = 1;
+}
+
+// Delete
+
+message DeleteMemberGroupRequest{
+  string token = 1;
+  string deletedId = 2;
+  string userId = 3;
+}
+
+message DeleteMemberGroupResponse{
+  Group group = 1;
+}
+
+//Leave
+
+message LeaveGroupRequest{
+  string token = 1;
+  string userId = 2;
+}
+
+message LeaveGroupResponse{
+  Group group = 1;
+}

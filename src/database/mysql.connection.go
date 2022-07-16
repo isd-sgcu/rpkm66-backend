@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"github.com/isd-sgcu/rnkm65-backend/src/app/model/group"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
 	"github.com/isd-sgcu/rnkm65-backend/src/config"
 	"gorm.io/driver/mysql"
@@ -17,7 +18,7 @@ func InitDatabase(conf *config.Database) (db *gorm.DB, err error) {
 		return nil, err
 	}
 
-	err = db.AutoMigrate(user.User{})
+	err = db.AutoMigrate(group.Group{}, user.User{})
 	if err != nil {
 		return nil, err
 	}
