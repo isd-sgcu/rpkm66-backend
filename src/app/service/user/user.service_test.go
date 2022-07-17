@@ -77,7 +77,6 @@ func (t *UserServiceTest) SetupTest() {
 		Disease:         t.User.Disease,
 		CanSelectBaan:   *t.User.CanSelectBaan,
 		IsVerify:        *t.User.IsVerify,
-		GroupId:         t.User.GroupID.String(),
 	}
 
 	t.CreateUserReqMock = &proto.CreateUserRequest{
@@ -399,7 +398,7 @@ func (t *UserServiceTest) TestDeleteNotFound() {
 func (t *UserServiceTest) TestCreateOrUpdateSuccess() {
 	userIn := *t.User
 	userIn.IsVerify = nil
-
+	userIn.GroupID = nil
 	want := &proto.CreateOrUpdateUserResponse{User: t.UserDto}
 
 	repo := &mock.RepositoryMock{}
@@ -436,7 +435,7 @@ func (t *UserServiceTest) TestCreateOrUpdateMalformedID() {
 func (t *UserServiceTest) TestCreateOrUpdateInternalErr() {
 	userIn := *t.User
 	userIn.IsVerify = nil
-
+	userIn.GroupID = nil
 	repo := &mock.RepositoryMock{}
 
 	repo.On("CreateOrUpdate", &userIn).Return(nil, errors.New("Something wrong"))

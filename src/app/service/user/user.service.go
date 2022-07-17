@@ -254,6 +254,5 @@ func RawToDto(in *user.User, imgUrl string) *proto.User {
 		ImageUrl:        imgUrl,
 		CanSelectBaan:   *in.CanSelectBaan,
 		IsVerify:        *in.IsVerify,
-		GroupId:         in.GroupID.String(),
 	}
 }
