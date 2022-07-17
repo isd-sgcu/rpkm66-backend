@@ -54,7 +54,7 @@ func (t *UserServiceTest) SetupTest() {
 		FoodRestriction: faker.Word(),
 		AllergyMedicine: faker.Word(),
 		Disease:         faker.Word(),
-		GroupID:         uuid.New(),
+		GroupID:         utils.UUIDAdr(uuid.New()),
 		CanSelectBaan:   utils.BoolAdr(true),
 		IsVerify:        utils.BoolAdr(true),
 	}
