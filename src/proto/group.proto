@@ -70,8 +70,8 @@ message JoinGroupResponse{
 
 message DeleteMemberGroupRequest{
   string token = 1;
-  string deletedId = 2;
-  string userId = 3;
+  string userId = 2;
+  string leaderId = 3;
 }
 
 message DeleteMemberGroupResponse{
