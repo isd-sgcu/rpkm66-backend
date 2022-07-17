@@ -65,6 +65,16 @@ func (r *RepositoryMock) Update(id string, result *user.User) error {
 	return args.Error(1)
 }
 
+func (r *RepositoryMock) SaveUser(result *user.User) error {
+	args := r.Called(result)
+
+	if args.Get(0) != nil {
+		*result = *args.Get(0).(*user.User)
+	}
+
+	return args.Error(1)
+}
+
 func (r *RepositoryMock) Delete(id string) error {
 	args := r.Called(id)
 
