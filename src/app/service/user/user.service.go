@@ -159,6 +159,8 @@ func (s *Service) Update(_ context.Context, req *proto.UpdateUserRequest) (res *
 		return nil, status.Error(codes.InvalidArgument, "invalid user id")
 	}
 
+	log.Print(raw)
+
 	err = s.repo.Update(req.User.Id, raw)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, "user not found")
@@ -192,6 +194,8 @@ func DtoToRaw(in *proto.User) (result *user.User, err error) {
 		if err != nil {
 			return nil, err
 		}
+
+		groupId = &gId
 
 		if gId == uuid.Nil {
 			groupId = nil
