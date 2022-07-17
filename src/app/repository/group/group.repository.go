@@ -3,6 +3,7 @@ package group
 import (
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/group"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
+	userRepo "github.com/isd-sgcu/rnkm65-backend/src/app/repository/user"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/utils"
 	"gorm.io/gorm"
 )
@@ -16,7 +17,7 @@ func NewRepository(db *gorm.DB) *Repository {
 }
 
 func (r *Repository) FindUserById(id string, result *user.User) error {
-	return r.db.First(&result, "id = ?", id).Error
+	return userRepo.NewRepository(r.db).FindOne(id, result)
 }
 
 func (r *Repository) FindGroupByToken(token string, result *group.Group) error {
@@ -33,11 +34,11 @@ func (r *Repository) Update(result *group.Group) error {
 }
 
 func (r *Repository) UpdateUser(result *user.User) error {
-	return r.db.Save(&result).Error
+	return userRepo.NewRepository(r.db).UpdateUser(result)
 }
 
 func (r *Repository) UpdateWithLeader(leaderId string, result *group.Group) error {
-	return r.db.Preload("Members").Where("leader_id = ?", leaderId).Updates(&result).First(&result, "leader_id = ?", leaderId).Error
+	return r.db.Where("leader_id = ?", leaderId).Updates(&result).First(&result, "leader_id = ?", leaderId).Error
 }
 
 func (r *Repository) Delete(id string) error {

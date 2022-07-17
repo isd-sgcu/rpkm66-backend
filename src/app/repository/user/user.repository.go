@@ -42,6 +42,10 @@ func (r *Repository) Update(id string, result *user.User) error {
 	return r.db.Where(id, "id = ?", id).Updates(&result).First(&result, "id = ?", id).Error
 }
 
+func (r *Repository) UpdateUser(result *user.User) error {
+	return r.db.Save(&result).Error
+}
+
 func (r *Repository) Delete(id string) error {
 	return r.db.Where("id = ?", id).Delete(&user.User{}).Error
 }

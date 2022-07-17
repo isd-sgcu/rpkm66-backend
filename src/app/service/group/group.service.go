@@ -108,9 +108,12 @@ func (s *Service) Join(_ context.Context, req *proto.JoinGroupRequest) (res *pro
 	prevGroupId := joinUser.GroupID
 	joinUser.GroupID = &joinGroup.ID
 	err = s.repo.UpdateUser(joinUser)
+	if err != nil {
+		return nil, status.Error(codes.NotFound, "user not found")
+	}
 
 	if req.IsLeader && req.Members == 1 {
-		err = s.repo.Delete(prevGroupId.String())
+		_ = s.repo.Delete(prevGroupId.String())
 	}
 
 	joinGroup.Members = append(joinGroup.Members, joinUser)
@@ -118,7 +121,7 @@ func (s *Service) Join(_ context.Context, req *proto.JoinGroupRequest) (res *pro
 }
 
 func (s *Service) DeleteMember(_ context.Context, req *proto.DeleteMemberGroupRequest) (res *proto.DeleteMemberGroupResponse, err error) {
-	_, err = uuid.Parse(req.DeletedId)
+	_, err = uuid.Parse(req.UserId)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid user id")
 	}
@@ -129,31 +132,29 @@ func (s *Service) DeleteMember(_ context.Context, req *proto.DeleteMemberGroupRe
 		return nil, status.Error(codes.NotFound, "group not found")
 	}
 
-	if deletedGrp.LeaderID != req.UserId {
+	if deletedGrp.LeaderID != req.LeaderId {
 		return nil, status.Error(codes.PermissionDenied, "not allowed")
+	}
+
+	removedUser := &user.User{}
+	err = s.repo.FindUserById(req.UserId, removedUser)
+	if err != nil {
+		return nil, status.Error(codes.NotFound, "user not found")
 	}
 
 	//create a new group for removed user
 	newGroup := &group.Group{
-		LeaderID: req.DeletedId,
+		LeaderID: req.UserId,
 	}
 	err = s.repo.Create(newGroup)
-
-	//remove the user from the group
-	var removedMember []*user.User
-	var removedUser *user.User
-	for _, usr := range deletedGrp.Members {
-		if usr.ID.String() == req.DeletedId {
-			removedUser = usr
-		} else {
-			removedMember = append(removedMember, usr)
-		}
-	}
-	deletedGrp.Members = removedMember
 	removedUser.GroupID = &newGroup.ID
-	err = s.repo.UpdateUser(removedUser)
 
-	return &proto.DeleteMemberGroupResponse{Group: RawToDto(deletedGrp)}, nil
+	_ = s.repo.UpdateUser(removedUser)
+
+	afterDeleteGrp := &group.Group{}
+	_ = s.repo.FindGroupByToken(req.Token, afterDeleteGrp)
+
+	return &proto.DeleteMemberGroupResponse{Group: RawToDto(afterDeleteGrp)}, nil
 }
 
 func (s *Service) Leave(_ context.Context, req *proto.LeaveGroupRequest) (res *proto.LeaveGroupResponse, err error) {
@@ -172,24 +173,27 @@ func (s *Service) Leave(_ context.Context, req *proto.LeaveGroupRequest) (res *p
 	}
 
 	leavedUser := &user.User{}
-	for _, usr := range prevGrp.Members {
-		if usr.ID.String() == req.UserId {
-			leavedUser = usr
-			break
-		}
+	err = s.repo.FindUserById(req.UserId, leavedUser)
+	if err != nil {
+		return nil, status.Error(codes.NotFound, "user not found")
 	}
+
 	in := &group.Group{
-		LeaderID: req.UserId,
+		LeaderID: leavedUser.ID.String(),
 	}
 	err = s.repo.Create(in)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to create group")
 	}
-
 	leavedUser.GroupID = &in.ID
+
 	err = s.repo.UpdateUser(leavedUser)
-	in.Members = []*user.User{leavedUser}
-	return &proto.LeaveGroupResponse{Group: RawToDto(in)}, nil
+
+	newGroup := &group.Group{}
+
+	_ = s.repo.FindGroupByToken(in.Token, newGroup)
+
+	return &proto.LeaveGroupResponse{Group: RawToDto(newGroup)}, nil
 }
 
 func DtoToRaw(in *proto.Group) (result *group.Group, err error) {
@@ -225,6 +229,7 @@ func DtoToRaw(in *proto.Group) (result *group.Group, err error) {
 			AllergyMedicine: usr.AllergyMedicine,
 			Disease:         usr.Disease,
 			CanSelectBaan:   &usr.CanSelectBaan,
+			IsVerify:        &usr.IsVerify,
 			GroupID:         &groupId,
 		}
 		members = append(members, newUser)
@@ -271,6 +276,7 @@ func RawToDto(in *group.Group) *proto.Group {
 			Disease:         usr.Disease,
 			ImageUrl:        "",
 			CanSelectBaan:   *usr.CanSelectBaan,
+			IsVerify:        *usr.IsVerify,
 			GroupId:         usr.GroupID.String(),
 		}
 		members = append(members, newUser)
