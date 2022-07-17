@@ -8,6 +8,6 @@ import (
 type Group struct {
 	model.Base
 	LeaderID string       `json:"leader_id"`
-	Token    string       `json:"token" gorm:"index"`
+	Token    string       `json:"token" gorm:"index:, unique"`
 	Members  []*user.User `json:"members"`
 }

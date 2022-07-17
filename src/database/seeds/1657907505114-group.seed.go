@@ -6,13 +6,15 @@ import (
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/utils"
 	"math/rand"
+	"strconv"
+	"time"
 )
 
 func (s Seed) GroupSeed1657907505114() error {
 	for i := 0; i < 10; i++ {
 		grp := &group.Group{
 			LeaderID: "",
-			Token:    faker.Word(),
+			Token:    strconv.Itoa(int(time.Now().Unix())),
 		}
 		err := s.db.Create(&grp).Error
 
@@ -21,7 +23,7 @@ func (s Seed) GroupSeed1657907505114() error {
 			Firstname:       faker.FirstName(),
 			Lastname:        faker.LastName(),
 			Nickname:        faker.Name(),
-			StudentID:       faker.Word(),
+			StudentID:       strconv.Itoa(int(time.Now().Unix())),
 			Faculty:         faker.Word(),
 			Year:            faker.Word(),
 			Phone:           faker.Phonenumber(),
@@ -51,7 +53,7 @@ func (s Seed) GroupSeed1657907505114() error {
 				Firstname:       faker.FirstName(),
 				Lastname:        faker.LastName(),
 				Nickname:        faker.Name(),
-				StudentID:       faker.Word(),
+				StudentID:       strconv.Itoa(int(time.Now().Unix())),
 				Faculty:         faker.Word(),
 				Year:            faker.Word(),
 				Phone:           faker.Phonenumber(),
