@@ -42,7 +42,7 @@ func (r *Repository) Update(id string, result *user.User) error {
 	return r.db.Where(id, "id = ?", id).Updates(&result).First(&result, "id = ?", id).Error
 }
 
-func (r *Repository) UpdateUser(result *user.User) error {
+func (r *Repository) SaveUser(result *user.User) error {
 	return r.db.Save(&result).Error
 }
 

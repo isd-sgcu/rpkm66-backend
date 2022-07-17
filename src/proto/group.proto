@@ -69,9 +69,8 @@ message JoinGroupResponse{
 // Delete
 
 message DeleteMemberGroupRequest{
-  string token = 1;
-  string userId = 2;
-  string leaderId = 3;
+  string userId = 1;
+  string leaderId = 2;
 }
 
 message DeleteMemberGroupResponse{
@@ -81,8 +80,7 @@ message DeleteMemberGroupResponse{
 //Leave
 
 message LeaveGroupRequest{
-  string token = 1;
-  string userId = 2;
+  string userId = 1;
 }
 
 message LeaveGroupResponse{

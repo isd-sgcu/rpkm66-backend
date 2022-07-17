@@ -15,20 +15,25 @@ import (
 )
 
 type Service struct {
-	repo IRepository
+	repo     IRepository
+	userRepo IUserRepository
 }
 
 type IRepository interface {
-	FindUserById(string, *user.User) error
 	FindGroupByToken(string, *group.Group) error
+	FindGroupById(string, *group.Group) error
 	Create(*group.Group) error
-	UpdateUser(*user.User) error
 	UpdateWithLeader(string, *group.Group) error
 	Delete(string) error
 }
 
-func NewService(repo IRepository) *Service {
-	return &Service{repo: repo}
+type IUserRepository interface {
+	FindOne(string, *user.User) error
+	SaveUser(*user.User) error
+}
+
+func NewService(repo IRepository, userRepo IUserRepository) *Service {
+	return &Service{repo: repo, userRepo: userRepo}
 }
 
 func (s *Service) FindByToken(_ context.Context, req *proto.FindByTokenGroupRequest) (res *proto.FindByTokenGroupResponse, err error) {
@@ -47,7 +52,7 @@ func (s *Service) Create(_ context.Context, req *proto.CreateGroupRequest) (res 
 	}
 
 	usr := &user.User{}
-	err = s.repo.FindUserById(req.UserId, usr)
+	err = s.userRepo.FindOne(req.UserId, usr)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, "user not found")
 	}
@@ -61,7 +66,7 @@ func (s *Service) Create(_ context.Context, req *proto.CreateGroupRequest) (res 
 	}
 
 	usr.GroupID = &in.ID
-	err = s.repo.UpdateUser(usr)
+	err = s.userRepo.SaveUser(usr)
 	in.Members = []*user.User{usr}
 
 	return &proto.CreateGroupResponse{Group: RawToDto(in)}, nil
@@ -102,13 +107,13 @@ func (s *Service) Join(_ context.Context, req *proto.JoinGroupRequest) (res *pro
 	}
 
 	joinUser := &user.User{}
-	err = s.repo.FindUserById(req.UserId, joinUser)
+	err = s.userRepo.FindOne(req.UserId, joinUser)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, "user not found")
 	}
 	prevGroupId := joinUser.GroupID
 	joinUser.GroupID = &joinGroup.ID
-	err = s.repo.UpdateUser(joinUser)
+	err = s.userRepo.SaveUser(joinUser)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, "user not found")
 	}
@@ -127,20 +132,20 @@ func (s *Service) DeleteMember(_ context.Context, req *proto.DeleteMemberGroupRe
 		return nil, status.Error(codes.InvalidArgument, "invalid user id")
 	}
 
+	removedUser := &user.User{}
+	err = s.userRepo.FindOne(req.UserId, removedUser)
+	if err != nil {
+		return nil, status.Error(codes.NotFound, "user not found")
+	}
+
 	deletedGrp := &group.Group{}
-	err = s.repo.FindGroupByToken(req.Token, deletedGrp)
+	err = s.repo.FindGroupById(removedUser.GroupID.String(), deletedGrp)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, "group not found")
 	}
 
 	if deletedGrp.LeaderID != req.LeaderId {
 		return nil, status.Error(codes.PermissionDenied, "not allowed")
-	}
-
-	removedUser := &user.User{}
-	err = s.repo.FindUserById(req.UserId, removedUser)
-	if err != nil {
-		return nil, status.Error(codes.NotFound, "user not found")
 	}
 
 	//create a new group for removed user
@@ -150,10 +155,10 @@ func (s *Service) DeleteMember(_ context.Context, req *proto.DeleteMemberGroupRe
 	err = s.repo.Create(newGroup)
 	removedUser.GroupID = &newGroup.ID
 
-	_ = s.repo.UpdateUser(removedUser)
+	_ = s.userRepo.SaveUser(removedUser)
 
 	afterDeleteGrp := &group.Group{}
-	_ = s.repo.FindGroupByToken(req.Token, afterDeleteGrp)
+	_ = s.repo.FindGroupByToken(deletedGrp.Token, afterDeleteGrp)
 
 	return &proto.DeleteMemberGroupResponse{Group: RawToDto(afterDeleteGrp)}, nil
 }
@@ -163,20 +168,20 @@ func (s *Service) Leave(_ context.Context, req *proto.LeaveGroupRequest) (res *p
 		return nil, status.Error(codes.InvalidArgument, "invalid user id")
 	}
 
+	leavedUser := &user.User{}
+	err = s.userRepo.FindOne(req.UserId, leavedUser)
+	if err != nil {
+		return nil, status.Error(codes.NotFound, "user not found")
+	}
+
 	prevGrp := &group.Group{}
-	err = s.repo.FindGroupByToken(req.Token, prevGrp)
+	err = s.repo.FindGroupById(leavedUser.GroupID.String(), prevGrp)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, "group not found")
 	}
 
 	if req.UserId == prevGrp.LeaderID {
 		return nil, status.Error(codes.PermissionDenied, "not allowed")
-	}
-
-	leavedUser := &user.User{}
-	err = s.repo.FindUserById(req.UserId, leavedUser)
-	if err != nil {
-		return nil, status.Error(codes.NotFound, "user not found")
 	}
 
 	in := &group.Group{
@@ -188,7 +193,7 @@ func (s *Service) Leave(_ context.Context, req *proto.LeaveGroupRequest) (res *p
 	}
 	leavedUser.GroupID = &in.ID
 
-	err = s.repo.UpdateUser(leavedUser)
+	err = s.userRepo.SaveUser(leavedUser)
 
 	newGroup := &group.Group{}
 
