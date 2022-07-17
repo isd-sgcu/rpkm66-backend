@@ -116,7 +116,6 @@ func (t *GroupServiceTest) TestFindByTokenSuccess() {
 	want := &proto.FindByTokenGroupResponse{Group: t.GroupDto}
 
 	repo := &mock.RepositoryMock{}
-
 	repo.On("FindGroupByToken", t.Group.Token, &group.Group{}).Return(t.Group, nil)
 
 	srv := NewService(repo)
@@ -330,18 +329,6 @@ func (t *GroupServiceTest) TestJoinSuccess1() {
 		CanSelectBaan:   *afterJoinedUser.CanSelectBaan,
 		GroupId:         afterJoinedUser.GroupID.String(),
 	}
-
-	//joinedGrp := &group.Group{
-	//	Base: model.Base{
-	//		ID:        t.Group.ID,
-	//		CreatedAt: t.Group.CreatedAt,
-	//		UpdatedAt: t.Group.UpdatedAt,
-	//		DeletedAt: t.Group.DeletedAt,
-	//	},
-	//	LeaderID: t.Group.LeaderID,
-	//	Token:    t.Group.Token,
-	//	Members:  []*user.User{t.UserMock, afterJoinedUser},
-	//}
 
 	want := &proto.JoinGroupResponse{Group: &proto.Group{
 		Id:       t.Group.ID.String(),
