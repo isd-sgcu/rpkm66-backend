@@ -6,6 +6,7 @@ import (
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/group"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
+	"github.com/isd-sgcu/rnkm65-backend/src/app/utils"
 	"github.com/isd-sgcu/rnkm65-backend/src/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -229,7 +230,6 @@ func DtoToRaw(in *proto.Group) (result *group.Group, err error) {
 			AllergyMedicine: usr.AllergyMedicine,
 			Disease:         usr.Disease,
 			CanSelectBaan:   &usr.CanSelectBaan,
-			IsVerify:        &usr.IsVerify,
 			GroupID:         &groupId,
 		}
 		members = append(members, newUser)
@@ -258,6 +258,9 @@ func DtoToRaw(in *proto.Group) (result *group.Group, err error) {
 func RawToDto(in *group.Group) *proto.Group {
 	var members []*proto.User
 	for _, usr := range in.Members {
+		if usr.IsVerify == nil {
+			usr.IsVerify = utils.BoolAdr(false)
+		}
 		newUser := &proto.User{
 			Id:              usr.ID.String(),
 			Title:           usr.Title,

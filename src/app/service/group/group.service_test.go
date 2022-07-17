@@ -287,8 +287,9 @@ func (t *GroupServiceTest) TestCreateInternalErr() {
 func (t *GroupServiceTest) TestUpdateSuccess() {
 	want := &proto.UpdateGroupResponse{Group: t.GroupDto}
 
+	t.UserMock.IsVerify = nil
+	t.UserDtoMock.IsVerify = false
 	repo := &mock.RepositoryMock{}
-
 	repo.On("UpdateWithLeader", t.Group.LeaderID, t.Group).Return(t.Group, nil)
 
 	srv := NewService(repo)
@@ -299,6 +300,8 @@ func (t *GroupServiceTest) TestUpdateSuccess() {
 }
 
 func (t *GroupServiceTest) TestUpdateNotFound() {
+	t.UserMock.IsVerify = nil
+
 	repo := &mock.RepositoryMock{}
 	repo.On("UpdateWithLeader", t.Group.LeaderID, t.Group).Return(nil, errors.New("Not found group"))
 
