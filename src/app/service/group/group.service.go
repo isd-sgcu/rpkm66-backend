@@ -38,25 +38,25 @@ func NewService(repo IRepository, userRepo IUserRepository) *Service {
 }
 
 func (s *Service) FindOne(_ context.Context, req *proto.FindOneGroupRequest) (res *proto.FindOneGroupResponse, err error) {
-	_, err = uuid.Parse(req.Id)
+	_, err = uuid.Parse(req.UserId)
 	if err != nil {
 		log.Error().
 			Err(err).
 			Str("service", "group").
 			Str("module", "find one").
-			Str("user_id", req.Id).
+			Str("user_id", req.UserId).
 			Msg("Invalid user id")
 		return nil, status.Error(codes.InvalidArgument, "invalid user id")
 	}
 
 	usr := &user.User{}
-	err = s.userRepo.FindOne(req.Id, usr)
+	err = s.userRepo.FindOne(req.UserId, usr)
 	if err != nil {
 		log.Error().
 			Err(err).
 			Str("service", "group").
 			Str("module", "find one").
-			Str("user_id", req.Id).
+			Str("user_id", req.UserId).
 			Msg("Not found user")
 		return nil, status.Error(codes.NotFound, "user not found")
 	}

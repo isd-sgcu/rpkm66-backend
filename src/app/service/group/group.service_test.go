@@ -192,7 +192,7 @@ func (t *GroupServiceTest) TestFindOneSuccess() {
 	userRepo.On("FindOne", t.UserMock.ID.String(), &user.User{}).Return(t.UserMock, nil)
 
 	srv := NewService(repo, userRepo)
-	actual, err := srv.FindOne(context.Background(), &proto.FindOneGroupRequest{Id: t.UserMock.ID.String()})
+	actual, err := srv.FindOne(context.Background(), &proto.FindOneGroupRequest{UserId: t.UserMock.ID.String()})
 
 	assert.Nil(t.T(), err)
 	assert.Equal(t.T(), want, actual)
@@ -206,7 +206,7 @@ func (t *GroupServiceTest) TestFindOneNotFound() {
 	userRepo.On("FindOne", t.UserMock.ID.String(), &user.User{}).Return(t.UserMock, nil)
 
 	srv := NewService(repo, userRepo)
-	actual, err := srv.FindOne(context.Background(), &proto.FindOneGroupRequest{Id: t.UserMock.ID.String()})
+	actual, err := srv.FindOne(context.Background(), &proto.FindOneGroupRequest{UserId: t.UserMock.ID.String()})
 
 	st, ok := status.FromError(err)
 
@@ -221,7 +221,7 @@ func (t *GroupServiceTest) TestFindOneInvalidID() {
 	userRepo := &mockUser.RepositoryMock{}
 
 	srv := NewService(repo, userRepo)
-	actual, err := srv.FindOne(context.Background(), &proto.FindOneGroupRequest{Id: "abc"})
+	actual, err := srv.FindOne(context.Background(), &proto.FindOneGroupRequest{UserId: "abc"})
 
 	st, ok := status.FromError(err)
 

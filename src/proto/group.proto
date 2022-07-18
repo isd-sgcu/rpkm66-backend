@@ -25,7 +25,7 @@ message Group{
 
 //Find One
 message FindOneGroupRequest{
-  string id = 1;
+  string userId = 1;
 }
 
 message FindOneGroupResponse{
