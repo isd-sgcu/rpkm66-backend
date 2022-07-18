@@ -82,7 +82,6 @@ func (t *GroupServiceTest) SetupTest() {
 		Disease:         t.UserMock.Disease,
 		CanSelectBaan:   *t.UserMock.CanSelectBaan,
 		IsVerify:        *t.UserMock.IsVerify,
-		GroupId:         t.UserMock.GroupID.String(),
 	}
 	t.Group = &group.Group{
 		Base: model.Base{
@@ -344,6 +343,7 @@ func (t *GroupServiceTest) TestUpdateSuccess() {
 
 	t.UserMock.IsVerify = nil
 	t.UserDtoMock.IsVerify = false
+	t.UserMock.GroupID = nil
 	repo := &mock.RepositoryMock{}
 	repo.On("UpdateWithLeader", t.Group.LeaderID, t.Group).Return(t.Group, nil)
 
@@ -357,7 +357,7 @@ func (t *GroupServiceTest) TestUpdateSuccess() {
 
 func (t *GroupServiceTest) TestUpdateNotFound() {
 	t.UserMock.IsVerify = nil
-
+	t.UserMock.GroupID = nil
 	repo := &mock.RepositoryMock{}
 	repo.On("UpdateWithLeader", t.Group.LeaderID, t.Group).Return(nil, errors.New("Not found group"))
 
@@ -435,7 +435,6 @@ func (t *GroupServiceTest) TestJoinSuccess1() {
 		Disease:         afterJoinedUser.Disease,
 		CanSelectBaan:   *afterJoinedUser.CanSelectBaan,
 		IsVerify:        *afterJoinedUser.IsVerify,
-		GroupId:         afterJoinedUser.GroupID.String(),
 	}
 
 	want := &proto.JoinGroupResponse{Group: &proto.Group{
@@ -479,7 +478,6 @@ func (t *GroupServiceTest) TestJoinSuccess2() {
 		Disease:         t.ReservedUser.Disease,
 		CanSelectBaan:   *t.ReservedUser.CanSelectBaan,
 		IsVerify:        *t.ReservedUser.IsVerify,
-		GroupId:         t.ReservedUser.GroupID.String(),
 	}
 	prevGrp := &group.Group{
 		Base: model.Base{
@@ -536,19 +534,18 @@ func (t *GroupServiceTest) TestJoinSuccess2() {
 		Disease:         joinUser.Disease,
 		CanSelectBaan:   *joinUser.CanSelectBaan,
 		IsVerify:        *joinUser.IsVerify,
-		GroupId:         joinUser.GroupID.String(),
 	}
 
 	want := &proto.JoinGroupResponse{Group: &proto.Group{
-		Id:       headUserDto.GroupId,
-		LeaderID: headUserDto.Id,
+		Id:       prevGrp.ID.String(),
+		LeaderID: prevGrp.LeaderID,
 		Token:    prevGrp.Token,
 		Members:  []*proto.User{headUserDto, joinUserDto},
 	}}
 
 	repo := &mock.RepositoryMock{}
 	repo.On("FindGroupByToken", prevGrp.Token, &group.Group{}).Return(prevGrp, nil)
-	repo.On("Delete", t.UserDtoMock.GroupId).Return(nil)
+	repo.On("Delete", (*t.UserMock.GroupID).String()).Return(nil)
 
 	userRepo := &mockUser.RepositoryMock{}
 	userRepo.On("FindOne", t.UserDtoMock.Id, &user.User{}).Return(t.UserMock, nil)
@@ -717,18 +714,6 @@ func (t *GroupServiceTest) TestDeleteMemberSuccess() {
 	}
 	want := &proto.DeleteMemberGroupResponse{Group: t.GroupDto}
 
-	//updateGroup := &group.Group{
-	//	Base: model.Base{
-	//		ID:        t.PreviousGroup.ID,
-	//		CreatedAt: t.PreviousGroup.CreatedAt,
-	//		UpdatedAt: t.PreviousGroup.UpdatedAt,
-	//		DeletedAt: t.PreviousGroup.DeletedAt,
-	//	},
-	//	LeaderID: t.PreviousGroup.LeaderID,
-	//	Token:    t.PreviousGroup.Token,
-	//	Members:  []*user.User{t.UserMock},
-	//}
-
 	repo := &mock.RepositoryMock{}
 	repo.On("Create", in).Return(in, nil)
 	repo.On("FindGroupById", t.RemovedUser.GroupID.String(), &group.Group{}).Return(t.PreviousGroup, nil)
@@ -846,7 +831,6 @@ func (t *GroupServiceTest) TestLeaveGroupSuccess() {
 		Disease:         updatedUser.Disease,
 		CanSelectBaan:   *updatedUser.CanSelectBaan,
 		IsVerify:        *updatedUser.IsVerify,
-		GroupId:         updatedUser.GroupID.String(),
 	}
 
 	newGroup := &group.Group{

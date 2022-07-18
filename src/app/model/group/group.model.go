@@ -1,6 +1,7 @@
 package group
 
 import (
+	"github.com/google/uuid"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/utils"
@@ -16,6 +17,6 @@ type Group struct {
 
 func (u *Group) BeforeCreate(_ *gorm.DB) error {
 	u.Token = utils.GenToken(u.LeaderID)
-
+	u.ID = uuid.New()
 	return nil
 }

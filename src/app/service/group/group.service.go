@@ -245,7 +245,7 @@ func (s *Service) Join(_ context.Context, req *proto.JoinGroupRequest) (res *pro
 	}
 
 	if req.IsLeader && req.Members == 1 {
-		_ = s.repo.Delete(prevGroupId.String())
+		_ = s.repo.Delete((*prevGroupId).String())
 	}
 
 	joinGroup.Members = append(joinGroup.Members, joinUser)
@@ -283,7 +283,7 @@ func (s *Service) DeleteMember(_ context.Context, req *proto.DeleteMemberGroupRe
 	}
 
 	deletedGrp := &group.Group{}
-	err = s.repo.FindGroupById(removedUser.GroupID.String(), deletedGrp)
+	err = s.repo.FindGroupById((*removedUser.GroupID).String(), deletedGrp)
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -348,7 +348,7 @@ func (s *Service) Leave(_ context.Context, req *proto.LeaveGroupRequest) (res *p
 	}
 
 	prevGrp := &group.Group{}
-	err = s.repo.FindGroupById(leavedUser.GroupID.String(), prevGrp)
+	err = s.repo.FindGroupById((*leavedUser.GroupID).String(), prevGrp)
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -405,10 +405,20 @@ func DtoToRaw(in *proto.Group) (result *group.Group, err error) {
 		if err != nil {
 			return nil, err
 		}
-		groupId, err := uuid.Parse(usr.GroupId)
-		if err != nil {
-			return nil, err
+
+		var groupId *uuid.UUID
+		if usr.GroupId != "" {
+			grpId, err := uuid.Parse(usr.GroupId)
+			if err != nil {
+				return nil, err
+			}
+
+			groupId = &grpId
+			if grpId == uuid.Nil {
+				groupId = nil
+			}
 		}
+
 		newUser := &user.User{
 			Base: model.Base{
 				ID:        id,
@@ -431,7 +441,7 @@ func DtoToRaw(in *proto.Group) (result *group.Group, err error) {
 			AllergyMedicine: usr.AllergyMedicine,
 			Disease:         usr.Disease,
 			CanSelectBaan:   &usr.CanSelectBaan,
-			GroupID:         &groupId,
+			GroupID:         groupId,
 		}
 		members = append(members, newUser)
 	}
@@ -462,6 +472,11 @@ func RawToDto(in *group.Group) *proto.Group {
 		if usr.IsVerify == nil {
 			usr.IsVerify = utils.BoolAdr(false)
 		}
+
+		if usr.CanSelectBaan == nil {
+			usr.CanSelectBaan = utils.BoolAdr(false)
+		}
+
 		newUser := &proto.User{
 			Id:              usr.ID.String(),
 			Title:           usr.Title,
@@ -481,7 +496,6 @@ func RawToDto(in *group.Group) *proto.Group {
 			ImageUrl:        "",
 			CanSelectBaan:   *usr.CanSelectBaan,
 			IsVerify:        *usr.IsVerify,
-			GroupId:         usr.GroupID.String(),
 		}
 		members = append(members, newUser)
 	}
