@@ -182,6 +182,54 @@ func (t *GroupServiceTest) SetupTest() {
 	}
 }
 
+func (t *GroupServiceTest) TestFindOneSuccess() {
+	want := &proto.FindOneGroupResponse{Group: t.GroupDto}
+
+	repo := &mock.RepositoryMock{}
+	repo.On("FindGroupById", (*t.UserMock.GroupID).String(), &group.Group{}).Return(t.Group, nil)
+
+	userRepo := &mockUser.RepositoryMock{}
+	userRepo.On("FindOne", t.UserMock.ID.String(), &user.User{}).Return(t.UserMock, nil)
+
+	srv := NewService(repo, userRepo)
+	actual, err := srv.FindOne(context.Background(), &proto.FindOneGroupRequest{Id: t.UserMock.ID.String()})
+
+	assert.Nil(t.T(), err)
+	assert.Equal(t.T(), want, actual)
+}
+
+func (t *GroupServiceTest) TestFindOneNotFound() {
+	repo := &mock.RepositoryMock{}
+	repo.On("FindGroupById", (*t.UserMock.GroupID).String(), &group.Group{}).Return(nil, errors.New("Not found group"))
+
+	userRepo := &mockUser.RepositoryMock{}
+	userRepo.On("FindOne", t.UserMock.ID.String(), &user.User{}).Return(t.UserMock, nil)
+
+	srv := NewService(repo, userRepo)
+	actual, err := srv.FindOne(context.Background(), &proto.FindOneGroupRequest{Id: t.UserMock.ID.String()})
+
+	st, ok := status.FromError(err)
+
+	assert.True(t.T(), ok)
+	assert.Nil(t.T(), actual)
+	assert.Equal(t.T(), codes.NotFound, st.Code())
+}
+
+func (t *GroupServiceTest) TestFindOneInvalidID() {
+	repo := &mock.RepositoryMock{}
+
+	userRepo := &mockUser.RepositoryMock{}
+
+	srv := NewService(repo, userRepo)
+	actual, err := srv.FindOne(context.Background(), &proto.FindOneGroupRequest{Id: "abc"})
+
+	st, ok := status.FromError(err)
+
+	assert.True(t.T(), ok)
+	assert.Nil(t.T(), actual)
+	assert.Equal(t.T(), codes.InvalidArgument, st.Code())
+}
+
 func (t *GroupServiceTest) TestFindByTokenSuccess() {
 	want := &proto.FindByTokenGroupResponse{Group: t.GroupDto}
 
@@ -224,7 +272,7 @@ func (t *GroupServiceTest) TestCreateSuccess() {
 	repo.On("Create", in).Return(t.Group, nil)
 
 	userRepo := &mockUser.RepositoryMock{}
-	userRepo.On("SaveUser", t.UserMock).Return(t.UserMock, nil)
+	userRepo.On("Update", t.UserMock.ID.String(), t.UserMock).Return(t.UserMock, nil)
 	userRepo.On("FindOne", t.UserMock.ID.String(), usr).Return(t.UserMock, nil)
 
 	srv := NewService(repo, userRepo)
@@ -402,7 +450,7 @@ func (t *GroupServiceTest) TestJoinSuccess1() {
 
 	userRepo := &mockUser.RepositoryMock{}
 	userRepo.On("FindOne", t.ReservedUser.ID.String(), &user.User{}).Return(t.ReservedUser, nil)
-	userRepo.On("SaveUser", afterJoinedUser).Return(afterJoinedUser, nil)
+	userRepo.On("Update", afterJoinedUser.ID.String(), afterJoinedUser).Return(afterJoinedUser, nil)
 
 	srv := NewService(repo, userRepo)
 	actual, err := srv.Join(context.Background(), &proto.JoinGroupRequest{Token: t.GroupDto.Token, UserId: t.ReservedUser.ID.String(), IsLeader: false, Members: 2})
@@ -504,7 +552,7 @@ func (t *GroupServiceTest) TestJoinSuccess2() {
 
 	userRepo := &mockUser.RepositoryMock{}
 	userRepo.On("FindOne", t.UserDtoMock.Id, &user.User{}).Return(t.UserMock, nil)
-	userRepo.On("SaveUser", joinUser).Return(joinUser, nil)
+	userRepo.On("Update", joinUser.ID.String(), joinUser).Return(joinUser, nil)
 
 	srv := NewService(repo, userRepo)
 	actual, err := srv.Join(context.Background(), &proto.JoinGroupRequest{Token: prevGrp.Token, UserId: t.UserDtoMock.Id, IsLeader: true, Members: 1})
@@ -688,7 +736,7 @@ func (t *GroupServiceTest) TestDeleteMemberSuccess() {
 
 	userRepo := &mockUser.RepositoryMock{}
 	userRepo.On("FindOne", t.RemovedUser.ID.String(), &user.User{}).Return(t.RemovedUser, nil)
-	userRepo.On("SaveUser", createdUser).Return(createdUser, nil)
+	userRepo.On("Update", createdUser.ID.String(), createdUser).Return(createdUser, nil)
 
 	srv := NewService(repo, userRepo)
 	actual, err := srv.DeleteMember(context.Background(), &proto.DeleteMemberGroupRequest{UserId: t.RemovedUser.ID.String(), LeaderId: t.GroupDto.LeaderID})
@@ -827,7 +875,7 @@ func (t *GroupServiceTest) TestLeaveGroupSuccess() {
 
 	userRepo := &mockUser.RepositoryMock{}
 	userRepo.On("FindOne", t.RemovedUser.ID.String(), &user.User{}).Return(t.RemovedUser, nil)
-	userRepo.On("SaveUser", updatedUser).Return(updatedUser, nil)
+	userRepo.On("Update", updatedUser.ID.String(), updatedUser).Return(updatedUser, nil)
 
 	srv := NewService(repo, userRepo)
 
