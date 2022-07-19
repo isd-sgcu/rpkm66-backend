@@ -4,8 +4,11 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	bRepo "github.com/isd-sgcu/rnkm65-backend/src/app/repository/baan"
+	"github.com/isd-sgcu/rnkm65-backend/src/app/repository/cache"
 	grpRepo "github.com/isd-sgcu/rnkm65-backend/src/app/repository/group"
 	ur "github.com/isd-sgcu/rnkm65-backend/src/app/repository/user"
+	bSrv "github.com/isd-sgcu/rnkm65-backend/src/app/service/baan"
 	fSrv "github.com/isd-sgcu/rnkm65-backend/src/app/service/file"
 	grpService "github.com/isd-sgcu/rnkm65-backend/src/app/service/group"
 	us "github.com/isd-sgcu/rnkm65-backend/src/app/service/user"
@@ -119,7 +122,7 @@ func main() {
 			Msg("Failed to start service")
 	}
 
-	cache, err := database.InitRedisConnect(&conf.Redis)
+	cacheDB, err := database.InitRedisConnect(&conf.Redis)
 	if err != nil {
 		log.Fatal().
 			Err(err).
@@ -147,17 +150,24 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 
+	cacheRepo := cache.NewRepository(cacheDB)
+
 	fileClient := proto.NewFileServiceClient(fileConn)
 	fileSrv := fSrv.NewService(fileClient)
 
 	usrRepo := ur.NewRepository(db)
 	usrSvc := us.NewService(usrRepo, fileSrv)
 
+	baRepo := bRepo.NewRepository(db)
+	baSrv := bSrv.NewService(baRepo, cacheRepo, conf.App)
+
 	groupRepo := grpRepo.NewRepository(db)
 	grpSvc := grpService.NewService(groupRepo, usrRepo)
 
 	grpc_health_v1.RegisterHealthServer(grpcServer, health.NewServer())
 	proto.RegisterUserServiceServer(grpcServer, usrSvc)
+	proto.RegisterBaanServiceServer(grpcServer, baSrv)
+
 	proto.RegisterGroupServiceServer(grpcServer, grpSvc)
 	reflection.Register(grpcServer)
 	go func() {
@@ -182,7 +192,7 @@ func main() {
 			return sqlDb.Close()
 		},
 		"cache": func(ctx context.Context) error {
-			return cache.Close()
+			return cacheDB.Close()
 		},
 		"server": func(ctx context.Context) error {
 			grpcServer.GracefulStop()

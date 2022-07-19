@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package baan;
+
+option go_package = "src/proto";
+
+service BaanService {
+  rpc FindAllBaan(FindAllBaanRequest) returns (FindAllBaanResponse) {}
+  rpc FindOneBaan(FindOneBaanRequest) returns (FindOneBaanResponse) {}
+}
+
+enum BaanSize{
+  S = 0;
+  M = 1;
+  L = 2;
+  XL = 3;
+  XXL = 4;
+}
+
+message Baan{
+  string id = 1;
+  string nameTH = 2;
+  string descriptionTH = 3;
+  string nameEN = 4;
+  string descriptionEN = 5;
+  BaanSize size = 6;
+  string facebook = 7;
+  string facebookUrl = 8;
+  string instagram = 9;
+  string instagramUrl = 10;
+  string line = 11;
+  string lineUrl = 12;
+  string imageUrl = 13;
+}
+
+// Find All Baan
+
+message FindAllBaanRequest{
+}
+
+message FindAllBaanResponse{
+  repeated Baan baans = 1;
+}
+
+// Find Baan
+
+message FindOneBaanRequest{
+  string id = 1;
+}
+
+message FindOneBaanResponse{
+  Baan baan = 1;
+}

@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"github.com/isd-sgcu/rnkm65-backend/src/app/model/baan"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/group"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
 	"github.com/isd-sgcu/rnkm65-backend/src/config"
@@ -18,7 +19,7 @@ func InitDatabase(conf *config.Database) (db *gorm.DB, err error) {
 		return nil, err
 	}
 
-	err = db.AutoMigrate(group.Group{}, user.User{})
+	err = db.AutoMigrate(group.Group{}, baan.Baan{}, user.User{})
 	if err != nil {
 		return nil, err
 	}
