@@ -74,7 +74,7 @@ func (s *Service) FindOne(_ context.Context, req *proto.FindOneGroupRequest) (re
 				Str("module", "find one").
 				Str("student_id", usr.StudentID).
 				Msg("Fail to create group")
-			return nil, status.Error(codes.NotFound, "failed to create group")
+			return nil, status.Error(codes.Internal, "failed to create group")
 		}
 
 		usr.GroupID = utils.UUIDAdr(newGrp.ID)
