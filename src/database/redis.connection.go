@@ -8,7 +8,7 @@ import (
 func InitRedisConnect(conf *config.Redis) (cache *redis.Client, err error) {
 	cache = redis.NewClient(&redis.Options{
 		Addr: conf.Host,
-		DB:   0,
+		DB:   3,
 	})
 
 	return
