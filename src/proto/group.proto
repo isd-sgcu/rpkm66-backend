@@ -68,8 +68,6 @@ message UpdateGroupResponse{
 message JoinGroupRequest{
   string token = 1;
   string userId = 2;
-  bool isLeader = 3;
-  int32 members = 4;
 }
 
 message JoinGroupResponse{

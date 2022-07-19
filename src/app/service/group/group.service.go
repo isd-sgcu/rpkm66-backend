@@ -61,6 +61,36 @@ func (s *Service) FindOne(_ context.Context, req *proto.FindOneGroupRequest) (re
 		return nil, status.Error(codes.NotFound, "user not found")
 	}
 
+	//if the user is not in the group -> create group
+	if usr.GroupID == nil {
+		newGrp := &group.Group{
+			LeaderID: usr.ID.String(),
+		}
+		err = s.repo.Create(newGrp)
+		if err != nil {
+			log.Error().
+				Err(err).
+				Str("service", "group").
+				Str("module", "find one").
+				Str("student_id", usr.StudentID).
+				Msg("Fail to create group")
+			return nil, status.Error(codes.NotFound, "failed to create group")
+		}
+
+		usr.GroupID = utils.UUIDAdr(newGrp.ID)
+		_ = s.userRepo.Update(usr.ID.String(), usr)
+
+		updateGrp := &group.Group{}
+		_ = s.repo.FindGroupByToken(newGrp.Token, updateGrp)
+		log.Info().
+			Str("service", "group").
+			Str("module", "find one").
+			Str("student_id", usr.StudentID).
+			Msg("Find group success")
+
+		return &proto.FindOneGroupResponse{Group: RawToDto(updateGrp)}, nil
+	}
+
 	grp := &group.Group{}
 	err = s.repo.FindGroupById((*usr.GroupID).String(), grp)
 	if err != nil {
@@ -184,16 +214,7 @@ func (s *Service) Update(_ context.Context, req *proto.UpdateGroupRequest) (res 
 }
 
 func (s *Service) Join(_ context.Context, req *proto.JoinGroupRequest) (res *proto.JoinGroupResponse, err error) {
-	if req.IsLeader && req.Members > 1 {
-		log.Error().
-			Err(err).
-			Str("service", "group").
-			Str("module", "join").
-			Str("user_id", req.UserId).
-			Msg("Not allowed")
-		return nil, status.Error(codes.PermissionDenied, "not allowed")
-	}
-
+	//check whether the user id is valid or not
 	if _, err = uuid.Parse(req.UserId); err != nil {
 		log.Error().
 			Err(err).
@@ -204,6 +225,7 @@ func (s *Service) Join(_ context.Context, req *proto.JoinGroupRequest) (res *pro
 		return nil, status.Error(codes.InvalidArgument, "invalid user id")
 	}
 
+	//Get group to check whether the joined group is existed or not
 	joinGroup := &group.Group{}
 	err = s.repo.FindGroupByToken(req.Token, joinGroup)
 	if err != nil {
@@ -215,11 +237,12 @@ func (s *Service) Join(_ context.Context, req *proto.JoinGroupRequest) (res *pro
 			Msg("Not found group")
 		return nil, status.Error(codes.NotFound, "group not found")
 	}
-
+	//check if the group is fulled or not
 	if len(joinGroup.Members) >= 3 {
 		return nil, status.Error(codes.PermissionDenied, "group full")
 	}
 
+	//Find user if user is existed
 	joinUser := &user.User{}
 	err = s.userRepo.FindOne(req.UserId, joinUser)
 	if err != nil {
@@ -231,8 +254,44 @@ func (s *Service) Join(_ context.Context, req *proto.JoinGroupRequest) (res *pro
 			Msg("Not found user")
 		return nil, status.Error(codes.NotFound, "user not found")
 	}
-	prevGroupId := joinUser.GroupID
+
+	//check if the joining user is in the joined group or not
+	if (*joinUser.GroupID).String() == joinGroup.ID.String() {
+		log.Error().
+			Err(err).
+			Str("service", "group").
+			Str("module", "join").
+			Str("user_id", req.UserId).
+			Msg("Not allowed")
+		return nil, status.Error(codes.PermissionDenied, "not allowed")
+	}
+
+	//Get group of joining user to check whether the user is leader or not
+	prevGrp := &group.Group{}
+	err = s.repo.FindGroupById((*joinUser.GroupID).String(), prevGrp)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("service", "group").
+			Str("module", "join").
+			Str("user_id", req.UserId).
+			Msg("Not found group")
+		return nil, status.Error(codes.NotFound, "group not found")
+	}
+
+	if req.UserId == prevGrp.LeaderID && len(prevGrp.Members) > 1 {
+		log.Error().
+			Err(err).
+			Str("service", "group").
+			Str("module", "join").
+			Str("user_id", req.UserId).
+			Msg("Not allowed")
+		return nil, status.Error(codes.PermissionDenied, "not allowed")
+	}
+
+	prevGroupId := prevGrp.ID.String()
 	joinUser.GroupID = &joinGroup.ID
+	//update user
 	err = s.userRepo.Update(joinUser.ID.String(), joinUser)
 	if err != nil {
 		log.Error().
@@ -244,18 +303,20 @@ func (s *Service) Join(_ context.Context, req *proto.JoinGroupRequest) (res *pro
 		return nil, status.Error(codes.NotFound, "fail to update user")
 	}
 
-	if req.IsLeader && req.Members == 1 {
-		_ = s.repo.Delete((*prevGroupId).String())
+	//if the joining user is the leader and there is only one in the group -> delete the previous group
+	if req.UserId == prevGrp.LeaderID && len(prevGrp.Members) == 1 {
+		_ = s.repo.Delete(prevGroupId)
 	}
 
-	joinGroup.Members = append(joinGroup.Members, joinUser)
+	newGrp := &group.Group{}
+	_ = s.repo.FindGroupByToken(req.Token, newGrp)
 
 	log.Info().
 		Str("service", "group").
 		Str("module", "join").
 		Str("student_id", joinUser.StudentID).
 		Msg("Join group Success")
-	return &proto.JoinGroupResponse{Group: RawToDto(joinGroup)}, nil
+	return &proto.JoinGroupResponse{Group: RawToDto(newGrp)}, nil
 }
 
 func (s *Service) DeleteMember(_ context.Context, req *proto.DeleteMemberGroupRequest) (res *proto.DeleteMemberGroupResponse, err error) {
