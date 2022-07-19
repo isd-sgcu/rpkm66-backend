@@ -231,9 +231,9 @@ var baans = []baan.Baan{
 	},
 	{
 		NameTH:        "บ้านแรง",
-		DescriptionTH: "LA LA RANG \nค่ำคืนนี้ถึงเวลาที่ดวงดาวจะส่องสว่างไปที่น้องเฟรชชี่ \nโบกสะบัดบัตรเชิญให้น้อง ๆ มารวมเฉลิมฉลองเต้นรำจังหวะ jazz ไปด้วยกันกับบ้านแรง มาสนุกกันเถอะ ❤️\nไม่ว่าน้องจะมาจากไหน บ้านหลังนี้พร้อมต้อนรับเสมอ อยากเจอนะอยากเจอ :-)\n\nFacebook : BaanRang CHULA\nInstagram : baanrang.official",
+		DescriptionTH: "LA LA RAN❗️\nค่ำคืนนี้ถึงเวลาที่ดวงดาวจะส่องสว่างไปที่น้องเฟรชชี่ \nโบกสะบัดบัตรเชิญให้น้อง ๆ มารวมเฉลิมฉลองเต้นรำจังหวะ jazz ไปด้วยกันกับบ้านแรง มาสนุกกันเถอะ ❤️\nไม่ว่าน้องจะมาจากไหน บ้านหลังนี้พร้อมต้อนรับเสมอ อยากเจอนะอยากเจอ :-)\n\nFacebook : BaanRang CHULA\nInstagram : baanrang.official",
 		NameEN:        "Baan Rang",
-		DescriptionEN: "LA LA RANG\nCity of stars are you shining just for me? Welcome Freshman... You all are invited to join the amazing jazz party with BaanRang. Let’s have fun together ❤️. I don’t know what you came to do, but I wanna do it with you :-)\n\nFacebook : BaanRang CHULA\nInstagram : baanrang.official",
+		DescriptionEN: "LA LA RANG❗️\nCity of stars are you shining just for me? Welcome Freshman... You all are invited to join the amazing jazz party with BaanRang. Let’s have fun together ❤️. I don’t know what you came to do, but I wanna do it with you :-)\n\nFacebook : BaanRang CHULA\nInstagram : baanrang.official",
 		ImageUrl:      "https://storage.googleapis.com/rnkm-public/Baan-Rang.jpg",
 		Size:          constant.XXL,
 		Facebook:      "BaanRang CHULA",
