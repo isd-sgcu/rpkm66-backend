@@ -22,6 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type GroupServiceClient interface {
+	FindOne(ctx context.Context, in *FindOneGroupRequest, opts ...grpc.CallOption) (*FindOneGroupResponse, error)
 	FindByToken(ctx context.Context, in *FindByTokenGroupRequest, opts ...grpc.CallOption) (*FindByTokenGroupResponse, error)
 	Create(ctx context.Context, in *CreateGroupRequest, opts ...grpc.CallOption) (*CreateGroupResponse, error)
 	Update(ctx context.Context, in *UpdateGroupRequest, opts ...grpc.CallOption) (*UpdateGroupResponse, error)
@@ -36,6 +37,15 @@ type groupServiceClient struct {
 
 func NewGroupServiceClient(cc grpc.ClientConnInterface) GroupServiceClient {
 	return &groupServiceClient{cc}
+}
+
+func (c *groupServiceClient) FindOne(ctx context.Context, in *FindOneGroupRequest, opts ...grpc.CallOption) (*FindOneGroupResponse, error) {
+	out := new(FindOneGroupResponse)
+	err := c.cc.Invoke(ctx, "/group.GroupService/FindOne", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *groupServiceClient) FindByToken(ctx context.Context, in *FindByTokenGroupRequest, opts ...grpc.CallOption) (*FindByTokenGroupResponse, error) {
@@ -96,6 +106,7 @@ func (c *groupServiceClient) Leave(ctx context.Context, in *LeaveGroupRequest, o
 // All implementations should embed UnimplementedGroupServiceServer
 // for forward compatibility
 type GroupServiceServer interface {
+	FindOne(context.Context, *FindOneGroupRequest) (*FindOneGroupResponse, error)
 	FindByToken(context.Context, *FindByTokenGroupRequest) (*FindByTokenGroupResponse, error)
 	Create(context.Context, *CreateGroupRequest) (*CreateGroupResponse, error)
 	Update(context.Context, *UpdateGroupRequest) (*UpdateGroupResponse, error)
@@ -108,6 +119,9 @@ type GroupServiceServer interface {
 type UnimplementedGroupServiceServer struct {
 }
 
+func (UnimplementedGroupServiceServer) FindOne(context.Context, *FindOneGroupRequest) (*FindOneGroupResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindOne not implemented")
+}
 func (UnimplementedGroupServiceServer) FindByToken(context.Context, *FindByTokenGroupRequest) (*FindByTokenGroupResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByToken not implemented")
 }
@@ -136,6 +150,24 @@ type UnsafeGroupServiceServer interface {
 
 func RegisterGroupServiceServer(s grpc.ServiceRegistrar, srv GroupServiceServer) {
 	s.RegisterService(&GroupService_ServiceDesc, srv)
+}
+
+func _GroupService_FindOne_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindOneGroupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GroupServiceServer).FindOne(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/group.GroupService/FindOne",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GroupServiceServer).FindOne(ctx, req.(*FindOneGroupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _GroupService_FindByToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -253,6 +285,10 @@ var GroupService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "group.GroupService",
 	HandlerType: (*GroupServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "FindOne",
+			Handler:    _GroupService_FindOne_Handler,
+		},
 		{
 			MethodName: "FindByToken",
 			Handler:    _GroupService_FindByToken_Handler,
