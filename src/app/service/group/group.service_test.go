@@ -26,7 +26,6 @@ type GroupServiceTest struct {
 	suite.Suite
 	Group              *group.Group
 	GroupDto           *proto.Group
-	CreateGroupReqMock *proto.CreateGroupRequest
 	UpdateGroupReqMock *proto.UpdateGroupRequest
 	UserMock           *user.User
 	UserDtoMock        *proto.UserInfo
@@ -88,10 +87,6 @@ func (t *GroupServiceTest) SetupTest() {
 		LeaderID: t.Group.LeaderID,
 		Token:    t.Group.Token,
 		Members:  []*proto.UserInfo{t.UserDtoMock},
-	}
-
-	t.CreateGroupReqMock = &proto.CreateGroupRequest{
-		UserId: t.UserMock.ID.String(),
 	}
 
 	t.UpdateGroupReqMock = &proto.UpdateGroupRequest{
