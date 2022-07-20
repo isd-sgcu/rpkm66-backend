@@ -21,6 +21,10 @@ func (r *Repository) FindGroupById(id string, result *group.Group) error {
 	return r.db.Preload("Members").First(&result, "id = ?", id).Error
 }
 
+func (r *Repository) FindGroupWithBaans(id string, result *group.Group) error {
+	return r.db.Preload("Baans").First(&result, "id = ?", id).Error
+}
+
 func (r *Repository) Create(in *group.Group) error {
 	return r.db.Create(&in).Error
 }
@@ -31,4 +35,8 @@ func (r *Repository) UpdateWithLeader(leaderId string, result *group.Group) erro
 
 func (r *Repository) Delete(id string) error {
 	return r.db.Where("id = ?", id).Delete(&group.Group{}).Error
+}
+
+func (r *Repository) RemoveAllBaan(g *group.Group) error {
+	return r.db.Model(&g).Association("Baans").Clear()
 }

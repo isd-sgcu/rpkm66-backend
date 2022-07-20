@@ -13,6 +13,7 @@ app:
   port: 3001
   debug: true
   baan_cache_ttl: 900
+  number_of_baan: 3
 
 service:
   file: localhost:3003

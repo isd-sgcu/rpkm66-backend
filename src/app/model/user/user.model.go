@@ -28,10 +28,10 @@ type User struct {
 	BaanID          *uuid.UUID `json:"baan_id" gorm:"index"`
 }
 
-func (u *User) BeforeCreate(_ *gorm.DB) error {
-	u.GroupID = nil
-	u.BaanID = nil
-	u.ID = uuid.New()
+func (m *User) BeforeCreate(_ *gorm.DB) error {
+	m.GroupID = nil
+	m.BaanID = nil
+	m.ID = uuid.New()
 
 	return nil
 }

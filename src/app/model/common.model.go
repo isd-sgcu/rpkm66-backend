@@ -13,8 +13,8 @@ type Base struct {
 	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index;type:datetime"`
 }
 
-func (b *Base) BeforeCreate(_ *gorm.DB) error {
-	b.ID = uuid.New()
+func (m *Base) BeforeCreate(_ *gorm.DB) error {
+	m.ID = uuid.New()
 
 	return nil
 }
