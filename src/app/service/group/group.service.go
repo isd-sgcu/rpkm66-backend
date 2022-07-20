@@ -18,6 +18,7 @@ import (
 type Service struct {
 	repo     IRepository
 	userRepo IUserRepository
+	fileSrv  IFileService
 }
 
 type IRepository interface {
@@ -33,8 +34,12 @@ type IUserRepository interface {
 	Update(string, *user.User) error
 }
 
-func NewService(repo IRepository, userRepo IUserRepository) *Service {
-	return &Service{repo: repo, userRepo: userRepo}
+type IFileService interface {
+	GetSignedUrl(string) (string, error)
+}
+
+func NewService(repo IRepository, userRepo IUserRepository, fileSrv IFileService) *Service {
+	return &Service{repo: repo, userRepo: userRepo, fileSrv: fileSrv}
 }
 
 func (s *Service) FindOne(_ context.Context, req *proto.FindOneGroupRequest) (res *proto.FindOneGroupResponse, err error) {
@@ -82,13 +87,19 @@ func (s *Service) FindOne(_ context.Context, req *proto.FindOneGroupRequest) (re
 
 		updateGrp := &group.Group{}
 		_ = s.repo.FindGroupByToken(newGrp.Token, updateGrp)
+
+		grpDto, err := s.RawToDto(updateGrp)
+		if err != nil {
+			return nil, err
+		}
+
 		log.Info().
 			Str("service", "group").
 			Str("module", "find one").
 			Str("student_id", usr.StudentID).
 			Msg("Find group success")
 
-		return &proto.FindOneGroupResponse{Group: RawToDto(updateGrp)}, nil
+		return &proto.FindOneGroupResponse{Group: grpDto}, nil
 	}
 
 	grp := &group.Group{}
@@ -103,18 +114,23 @@ func (s *Service) FindOne(_ context.Context, req *proto.FindOneGroupRequest) (re
 		return nil, status.Error(codes.NotFound, "group not found")
 	}
 
+	grpDto, err := s.RawToDto(grp)
+	if err != nil {
+		return nil, err
+	}
+
 	log.Info().
 		Str("service", "group").
 		Str("module", "find one").
 		Str("student_id", usr.StudentID).
 		Msg("Find group success")
-	return &proto.FindOneGroupResponse{Group: RawToDto(grp)}, nil
+	return &proto.FindOneGroupResponse{Group: grpDto}, nil
 }
 
 func (s *Service) FindByToken(_ context.Context, req *proto.FindByTokenGroupRequest) (res *proto.FindByTokenGroupResponse, err error) {
-	raw := group.Group{}
+	raw := &group.Group{}
 
-	err = s.repo.FindGroupByToken(req.Token, &raw)
+	err = s.repo.FindGroupByToken(req.Token, raw)
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -124,61 +140,40 @@ func (s *Service) FindByToken(_ context.Context, req *proto.FindByTokenGroupRequ
 			Msg("Not found group")
 		return nil, status.Error(codes.NotFound, "group not found")
 	}
+
+	usr := &user.User{}
+
+	err = s.userRepo.FindOne(raw.LeaderID, usr)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("service", "group").
+			Str("module", "find group by token").
+			Str("token", req.Token).
+			Msg("Not found user")
+		return nil, status.Error(codes.NotFound, "user not found")
+	}
+
 	log.Info().
 		Str("service", "group").
 		Str("module", "find group by token").
 		Str("token", req.Token).
 		Msg("Find group by token success")
-	return &proto.FindByTokenGroupResponse{Group: RawToDto(&raw)}, nil
-}
 
-func (s *Service) Create(_ context.Context, req *proto.CreateGroupRequest) (res *proto.CreateGroupResponse, err error) {
-	if _, err = uuid.Parse(req.UserId); err != nil {
-		log.Error().
-			Err(err).
-			Str("service", "group").
-			Str("module", "create").
-			Str("user_id", req.UserId).
-			Msg("Invalid user id")
-		return nil, status.Error(codes.InvalidArgument, "invalid leader id")
-	}
-
-	usr := &user.User{}
-	err = s.userRepo.FindOne(req.UserId, usr)
+	leaderUrl, err := s.GetUserImage(usr)
 	if err != nil {
-		log.Error().
-			Err(err).
-			Str("service", "group").
-			Str("module", "create").
-			Str("user_id", req.UserId).
-			Msg("Not found user")
-		return nil, status.Error(codes.NotFound, "user not found")
+		return nil, err
 	}
-
-	in := &group.Group{
-		LeaderID: req.UserId,
-	}
-	err = s.repo.Create(in)
-	if err != nil {
-		log.Error().
-			Err(err).
-			Str("service", "group").
-			Str("module", "create").
-			Str("student_id", usr.StudentID).
-			Msg("Fail to create group")
-		return nil, status.Error(codes.Internal, "failed to create group")
-	}
-
-	usr.GroupID = &in.ID
-	err = s.userRepo.Update(usr.ID.String(), usr)
-	in.Members = []*user.User{usr}
-
-	log.Info().
-		Str("service", "group").
-		Str("module", "create").
-		Str("student_id", usr.StudentID).
-		Msg("Create group success")
-	return &proto.CreateGroupResponse{Group: RawToDto(in)}, nil
+	return &proto.FindByTokenGroupResponse{
+		Id:    raw.ID.String(),
+		Token: raw.Token,
+		Leader: &proto.UserInfo{
+			Id:        usr.ID.String(),
+			FirstName: usr.Firstname,
+			LastName:  usr.Lastname,
+			ImageUrl:  leaderUrl,
+		},
+	}, nil
 }
 
 func (s *Service) Update(_ context.Context, req *proto.UpdateGroupRequest) (res *proto.UpdateGroupResponse, err error) {
@@ -205,12 +200,16 @@ func (s *Service) Update(_ context.Context, req *proto.UpdateGroupRequest) (res 
 		return nil, status.Error(codes.NotFound, "group not found")
 	}
 
+	grpDto, err := s.RawToDto(raw)
+	if err != nil {
+		return nil, err
+	}
 	log.Info().
 		Str("service", "group").
 		Str("module", "update").
 		Str("user_id", req.LeaderId).
 		Msg("Update group success")
-	return &proto.UpdateGroupResponse{Group: RawToDto(raw)}, nil
+	return &proto.UpdateGroupResponse{Group: grpDto}, nil
 }
 
 func (s *Service) Join(_ context.Context, req *proto.JoinGroupRequest) (res *proto.JoinGroupResponse, err error) {
@@ -311,12 +310,16 @@ func (s *Service) Join(_ context.Context, req *proto.JoinGroupRequest) (res *pro
 	newGrp := &group.Group{}
 	_ = s.repo.FindGroupByToken(req.Token, newGrp)
 
+	grpDto, err := s.RawToDto(newGrp)
+	if err != nil {
+		return nil, err
+	}
 	log.Info().
 		Str("service", "group").
 		Str("module", "join").
 		Str("student_id", joinUser.StudentID).
 		Msg("Join group Success")
-	return &proto.JoinGroupResponse{Group: RawToDto(newGrp)}, nil
+	return &proto.JoinGroupResponse{Group: grpDto}, nil
 }
 
 func (s *Service) DeleteMember(_ context.Context, req *proto.DeleteMemberGroupRequest) (res *proto.DeleteMemberGroupResponse, err error) {
@@ -377,12 +380,16 @@ func (s *Service) DeleteMember(_ context.Context, req *proto.DeleteMemberGroupRe
 	afterDeleteGrp := &group.Group{}
 	_ = s.repo.FindGroupByToken(deletedGrp.Token, afterDeleteGrp)
 
+	grpDto, err := s.RawToDto(afterDeleteGrp)
+	if err != nil {
+		return nil, err
+	}
 	log.Info().
 		Str("service", "group").
 		Str("module", "delete member").
 		Str("user_id", req.LeaderId).
 		Msg("Delete member success")
-	return &proto.DeleteMemberGroupResponse{Group: RawToDto(afterDeleteGrp)}, nil
+	return &proto.DeleteMemberGroupResponse{Group: grpDto}, nil
 }
 
 func (s *Service) Leave(_ context.Context, req *proto.LeaveGroupRequest) (res *proto.LeaveGroupResponse, err error) {
@@ -451,12 +458,16 @@ func (s *Service) Leave(_ context.Context, req *proto.LeaveGroupRequest) (res *p
 
 	_ = s.repo.FindGroupByToken(in.Token, newGroup)
 
+	grpDto, err := s.RawToDto(newGroup)
+	if err != nil {
+		return nil, err
+	}
 	log.Info().
 		Str("service", "group").
 		Str("module", "leave").
 		Str("student_id", leavedUser.StudentID).
 		Msg("Leave group success")
-	return &proto.LeaveGroupResponse{Group: RawToDto(newGroup)}, nil
+	return &proto.LeaveGroupResponse{Group: grpDto}, nil
 }
 
 func DtoToRaw(in *proto.Group) (result *group.Group, err error) {
@@ -467,19 +478,6 @@ func DtoToRaw(in *proto.Group) (result *group.Group, err error) {
 			return nil, err
 		}
 
-		var groupId *uuid.UUID
-		if usr.GroupId != "" {
-			grpId, err := uuid.Parse(usr.GroupId)
-			if err != nil {
-				return nil, err
-			}
-
-			groupId = &grpId
-			if grpId == uuid.Nil {
-				groupId = nil
-			}
-		}
-
 		newUser := &user.User{
 			Base: model.Base{
 				ID:        id,
@@ -487,22 +485,8 @@ func DtoToRaw(in *proto.Group) (result *group.Group, err error) {
 				UpdatedAt: time.Time{},
 				DeletedAt: gorm.DeletedAt{},
 			},
-			Title:           usr.Title,
-			Firstname:       usr.Firstname,
-			Lastname:        usr.Lastname,
-			Nickname:        usr.Nickname,
-			StudentID:       usr.StudentID,
-			Faculty:         usr.Faculty,
-			Year:            usr.Year,
-			Phone:           usr.Phone,
-			LineID:          usr.LineID,
-			Email:           usr.Email,
-			AllergyFood:     usr.AllergyFood,
-			FoodRestriction: usr.FoodRestriction,
-			AllergyMedicine: usr.AllergyMedicine,
-			Disease:         usr.Disease,
-			CanSelectBaan:   &usr.CanSelectBaan,
-			GroupID:         groupId,
+			Firstname: usr.FirstName,
+			Lastname:  usr.LastName,
 		}
 		members = append(members, newUser)
 	}
@@ -527,44 +511,79 @@ func DtoToRaw(in *proto.Group) (result *group.Group, err error) {
 	}, nil
 }
 
-func RawToDto(in *group.Group) *proto.Group {
-	var members []*proto.User
-	for _, usr := range in.Members {
-		if usr.IsVerify == nil {
-			usr.IsVerify = utils.BoolAdr(false)
-		}
-
-		if usr.CanSelectBaan == nil {
-			usr.CanSelectBaan = utils.BoolAdr(false)
-		}
-
-		newUser := &proto.User{
-			Id:              usr.ID.String(),
-			Title:           usr.Title,
-			Firstname:       usr.Firstname,
-			Lastname:        usr.Lastname,
-			Nickname:        usr.Nickname,
-			StudentID:       usr.StudentID,
-			Faculty:         usr.Faculty,
-			Year:            usr.Year,
-			Phone:           usr.Phone,
-			LineID:          usr.LineID,
-			Email:           usr.Email,
-			AllergyFood:     usr.AllergyFood,
-			FoodRestriction: usr.FoodRestriction,
-			AllergyMedicine: usr.AllergyMedicine,
-			Disease:         usr.Disease,
-			ImageUrl:        "",
-			CanSelectBaan:   *usr.CanSelectBaan,
-			IsVerify:        *usr.IsVerify,
-		}
-		members = append(members, newUser)
+func (s *Service) RawToDto(in *group.Group) (result *proto.Group, err error) {
+	members, err := s.GetMembersImages(in.Members)
+	if err != nil {
+		return nil, err
 	}
-
-	return &proto.Group{
+	grp := &proto.Group{
 		Id:       in.ID.String(),
 		LeaderID: in.LeaderID,
 		Token:    in.Token,
 		Members:  members,
 	}
+	return grp, nil
+}
+
+func (s *Service) GetMembersImages(users []*user.User) (result []*proto.UserInfo, err error) {
+	var members []*proto.UserInfo
+	for _, usr := range users {
+		url, err := s.GetUserImage(usr)
+		if err != nil {
+			return nil, err
+		}
+		newUser := &proto.UserInfo{
+			Id:        usr.ID.String(),
+			FirstName: usr.Firstname,
+			LastName:  usr.Lastname,
+			ImageUrl:  url,
+		}
+		members = append(members, newUser)
+	}
+
+	return members, nil
+}
+
+func (s *Service) GetUserImage(usr *user.User) (result string, err error) {
+	url, err := s.fileSrv.GetSignedUrl(usr.ID.String())
+	if err != nil {
+		st, ok := status.FromError(err)
+		if ok {
+			switch st.Code() {
+			case codes.NotFound:
+				log.Error().
+					Err(err).
+					Str("service", "group").
+					Str("module", "find one").
+					Str("student_id", usr.StudentID).
+					Msg("Not found image")
+				return "", nil
+			case codes.Unavailable:
+				log.Error().
+					Err(err).
+					Str("service", "group").
+					Str("module", "find one").
+					Str("student_id", usr.StudentID).
+					Msg("Fail to connect database")
+				return "", status.Error(codes.Unavailable, "fail to connect database")
+
+			default:
+				log.Error().
+					Err(err).
+					Str("service", "group").
+					Str("module", "find one").
+					Str("student_id", usr.StudentID).
+					Msg("Error while connecting to service")
+				return "", err
+			}
+		}
+		log.Error().
+			Err(err).
+			Str("service", "group").
+			Str("module", "find one").
+			Str("student_id", usr.StudentID).
+			Msg("Error while connecting to service")
+		return "", err
+	}
+	return url, nil
 }

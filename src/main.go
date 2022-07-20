@@ -162,7 +162,7 @@ func main() {
 	baSrv := bSrv.NewService(baRepo, cacheRepo, conf.App)
 
 	groupRepo := grpRepo.NewRepository(db)
-	grpSvc := grpService.NewService(groupRepo, usrRepo)
+	grpSvc := grpService.NewService(groupRepo, usrRepo, fileSrv)
 
 	grpc_health_v1.RegisterHealthServer(grpcServer, health.NewServer())
 	proto.RegisterUserServiceServer(grpcServer, usrSvc)
