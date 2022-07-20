@@ -3,11 +3,12 @@ package baan
 type BaanSize int
 
 const (
-	S   = 0
-	M   = 1
-	L   = 2
-	XL  = 3
-	XXL = 4
+	UNKNOWN = 0
+	S       = 1
+	M       = 2
+	L       = 3
+	XL      = 4
+	XXL     = 5
 )
 
 const BaanKey = "baan"
