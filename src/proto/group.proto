@@ -2,14 +2,11 @@ syntax = "proto3";
 
 package group;
 
-import "user.proto";
-
 option go_package = "src/proto";
 
 service GroupService {
   rpc FindOne(FindOneGroupRequest) returns (FindOneGroupResponse) {}
   rpc FindByToken(FindByTokenGroupRequest) returns (FindByTokenGroupResponse) {}
-  rpc Create(CreateGroupRequest) returns (CreateGroupResponse) {}
   rpc Update(UpdateGroupRequest) returns (UpdateGroupResponse) {}
   rpc Join(JoinGroupRequest) returns (JoinGroupResponse) {}
   rpc DeleteMember(DeleteMemberGroupRequest) returns (DeleteMemberGroupResponse){}
@@ -20,7 +17,14 @@ message Group{
   string id = 1;
   string leaderID = 2;
   string token = 3;
-  repeated user.User members = 4;
+  repeated UserInfo members = 4;
+}
+
+message UserInfo {
+  string id = 1;
+  string firstName = 2;
+  string lastName = 3;
+  string imageUrl = 4;
 }
 
 //Find One
@@ -39,17 +43,11 @@ message FindByTokenGroupRequest{
 }
 
 message FindByTokenGroupResponse{
-  Group group = 1;
-}
-
-// Create
-
-message CreateGroupRequest{
-  string userId = 1;
-}
-
-message CreateGroupResponse{
-  Group group = 1;
+  string id = 1;
+  string leaderID = 2;
+  string token = 3;
+  string leaderFirstName = 4;
+  string leaderLastName = 5;
 }
 
 // Update

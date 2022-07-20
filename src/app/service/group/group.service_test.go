@@ -8,6 +8,7 @@ import (
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/group"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/utils"
+	mockFile "github.com/isd-sgcu/rnkm65-backend/src/mocks/file"
 	mock "github.com/isd-sgcu/rnkm65-backend/src/mocks/group"
 	mockUser "github.com/isd-sgcu/rnkm65-backend/src/mocks/user"
 	"github.com/isd-sgcu/rnkm65-backend/src/proto"
@@ -28,7 +29,7 @@ type GroupServiceTest struct {
 	CreateGroupReqMock *proto.CreateGroupRequest
 	UpdateGroupReqMock *proto.UpdateGroupRequest
 	UserMock           *user.User
-	UserDtoMock        *proto.User
+	UserDtoMock        *proto.UserInfo
 	ReservedUser       *user.User
 	RemovedUser        *user.User
 	PreviousGroup      *group.Group
@@ -64,24 +65,11 @@ func (t *GroupServiceTest) SetupTest() {
 		IsVerify:        utils.BoolAdr(true),
 		GroupID:         utils.UUIDAdr(uuid.New()),
 	}
-	t.UserDtoMock = &proto.User{
-		Id:              t.UserMock.ID.String(),
-		Title:           t.UserMock.Title,
-		Firstname:       t.UserMock.Firstname,
-		Lastname:        t.UserMock.Lastname,
-		Nickname:        t.UserMock.Nickname,
-		StudentID:       t.UserMock.StudentID,
-		Faculty:         t.UserMock.Faculty,
-		Year:            t.UserMock.Year,
-		Phone:           t.UserMock.Phone,
-		LineID:          t.UserMock.LineID,
-		Email:           t.UserMock.Email,
-		AllergyFood:     t.UserMock.AllergyFood,
-		FoodRestriction: t.UserMock.FoodRestriction,
-		AllergyMedicine: t.UserMock.AllergyMedicine,
-		Disease:         t.UserMock.Disease,
-		CanSelectBaan:   *t.UserMock.CanSelectBaan,
-		IsVerify:        *t.UserMock.IsVerify,
+	t.UserDtoMock = &proto.UserInfo{
+		Id:        t.UserMock.ID.String(),
+		FirstName: t.UserMock.Firstname,
+		LastName:  t.UserMock.Lastname,
+		ImageUrl:  "",
 	}
 	t.Group = &group.Group{
 		Base: model.Base{
@@ -99,7 +87,7 @@ func (t *GroupServiceTest) SetupTest() {
 		Id:       t.Group.ID.String(),
 		LeaderID: t.Group.LeaderID,
 		Token:    t.Group.Token,
-		Members:  []*proto.User{t.UserDtoMock},
+		Members:  []*proto.UserInfo{t.UserDtoMock},
 	}
 
 	t.CreateGroupReqMock = &proto.CreateGroupRequest{
@@ -190,7 +178,10 @@ func (t *GroupServiceTest) TestFindOneSuccess() {
 	userRepo := &mockUser.RepositoryMock{}
 	userRepo.On("FindOne", t.UserMock.ID.String(), &user.User{}).Return(t.UserMock, nil)
 
-	srv := NewService(repo, userRepo)
+	fileSrv := &mockFile.ServiceMock{}
+	fileSrv.On("GetSignedUrl", t.UserMock.ID.String()).Return("", nil)
+
+	srv := NewService(repo, userRepo, fileSrv)
 	actual, err := srv.FindOne(context.Background(), &proto.FindOneGroupRequest{UserId: t.UserMock.ID.String()})
 
 	assert.Nil(t.T(), err)
@@ -204,7 +195,9 @@ func (t *GroupServiceTest) TestFindOneNotFound() {
 	userRepo := &mockUser.RepositoryMock{}
 	userRepo.On("FindOne", t.UserMock.ID.String(), &user.User{}).Return(t.UserMock, nil)
 
-	srv := NewService(repo, userRepo)
+	fileSrv := &mockFile.ServiceMock{}
+
+	srv := NewService(repo, userRepo, fileSrv)
 	actual, err := srv.FindOne(context.Background(), &proto.FindOneGroupRequest{UserId: t.UserMock.ID.String()})
 
 	st, ok := status.FromError(err)
@@ -219,7 +212,9 @@ func (t *GroupServiceTest) TestFindOneInvalidID() {
 
 	userRepo := &mockUser.RepositoryMock{}
 
-	srv := NewService(repo, userRepo)
+	fileSrv := &mockFile.ServiceMock{}
+
+	srv := NewService(repo, userRepo, fileSrv)
 	actual, err := srv.FindOne(context.Background(), &proto.FindOneGroupRequest{UserId: "abc"})
 
 	st, ok := status.FromError(err)
@@ -268,7 +263,11 @@ func (t *GroupServiceTest) TestFindOneWithCreateGroup() {
 	userRepo := &mockUser.RepositoryMock{}
 	userRepo.On("FindOne", t.UserMock.ID.String(), &user.User{}).Return(nonGroupUser, nil)
 	userRepo.On("Update", t.UserMock.ID.String(), t.UserMock).Return(t.UserMock, nil)
-	srv := NewService(repo, userRepo)
+
+	fileSrv := &mockFile.ServiceMock{}
+	fileSrv.On("GetSignedUrl", t.UserMock.ID.String()).Return("", nil)
+
+	srv := NewService(repo, userRepo, fileSrv)
 	actual, err := srv.FindOne(context.Background(), &proto.FindOneGroupRequest{UserId: t.UserMock.ID.String()})
 
 	assert.Nil(t.T(), err)
@@ -276,13 +275,21 @@ func (t *GroupServiceTest) TestFindOneWithCreateGroup() {
 }
 
 func (t *GroupServiceTest) TestFindByTokenSuccess() {
-	want := &proto.FindByTokenGroupResponse{Group: t.GroupDto}
+	want := &proto.FindByTokenGroupResponse{
+		Id:              t.Group.ID.String(),
+		LeaderID:        t.Group.LeaderID,
+		Token:           t.Group.Token,
+		LeaderFirstName: t.UserMock.Firstname,
+		LeaderLastName:  t.UserMock.Lastname,
+	}
 
 	repo := &mock.RepositoryMock{}
 
 	repo.On("FindGroupByToken", t.Group.Token, &group.Group{}).Return(t.Group, nil)
 	userRepo := &mockUser.RepositoryMock{}
-	srv := NewService(repo, userRepo)
+	userRepo.On("FindOne", t.UserMock.ID.String(), &user.User{}).Return(t.UserMock, nil)
+	fileSrv := &mockFile.ServiceMock{}
+	srv := NewService(repo, userRepo, fileSrv)
 	actual, err := srv.FindByToken(context.Background(), &proto.FindByTokenGroupRequest{Token: t.GroupDto.Token})
 
 	assert.Nil(t.T(), err)
@@ -295,7 +302,9 @@ func (t *GroupServiceTest) TestFindByTokenNotFound() {
 	repo.On("FindGroupByToken", t.Group.Token, &group.Group{}).Return(nil, errors.New("Not found group"))
 
 	userRepo := &mockUser.RepositoryMock{}
-	srv := NewService(repo, userRepo)
+
+	fileSrv := &mockFile.ServiceMock{}
+	srv := NewService(repo, userRepo, fileSrv)
 	actual, err := srv.FindByToken(context.Background(), &proto.FindByTokenGroupRequest{Token: t.GroupDto.Token})
 
 	st, ok := status.FromError(err)
@@ -304,97 +313,41 @@ func (t *GroupServiceTest) TestFindByTokenNotFound() {
 	assert.Equal(t.T(), codes.NotFound, st.Code())
 }
 
-func (t *GroupServiceTest) TestCreateSuccess() {
-	want := &proto.CreateGroupResponse{Group: t.GroupDto}
-
-	repo := &mock.RepositoryMock{}
-
-	in := &group.Group{
-		LeaderID: t.UserMock.ID.String(),
-	}
-
-	usr := &user.User{}
-	repo.On("Create", in).Return(t.Group, nil)
-
-	userRepo := &mockUser.RepositoryMock{}
-	userRepo.On("Update", t.UserMock.ID.String(), t.UserMock).Return(t.UserMock, nil)
-	userRepo.On("FindOne", t.UserMock.ID.String(), usr).Return(t.UserMock, nil)
-
-	srv := NewService(repo, userRepo)
-
-	actual, err := srv.Create(context.Background(), t.CreateGroupReqMock)
-
-	assert.Nil(t.T(), err)
-	assert.Equal(t.T(), want, actual)
-}
-
-func (t *GroupServiceTest) TestCreateNotFound() {
-	usr := &user.User{}
-
-	repo := &mock.RepositoryMock{}
-
-	userRepo := &mockUser.RepositoryMock{}
-	userRepo.On("FindOne", t.Group.LeaderID, usr).Return(nil, errors.New("not found user"))
-	srv := NewService(repo, userRepo)
-
-	actual, err := srv.Create(context.Background(), &proto.CreateGroupRequest{UserId: t.Group.LeaderID})
-
-	st, ok := status.FromError(err)
-
-	assert.True(t.T(), ok)
-	assert.Nil(t.T(), actual)
-	assert.Equal(t.T(), codes.NotFound, st.Code())
-}
-
-func (t *GroupServiceTest) TestCreateMalformed() {
-	repo := &mock.RepositoryMock{}
-
-	userRepo := &mockUser.RepositoryMock{}
-	srv := NewService(repo, userRepo)
-
-	actual, err := srv.Create(context.Background(), &proto.CreateGroupRequest{UserId: "abc"})
-
-	st, ok := status.FromError(err)
-
-	assert.True(t.T(), ok)
-	assert.Nil(t.T(), actual)
-	assert.Equal(t.T(), codes.InvalidArgument, st.Code())
-}
-
-func (t *GroupServiceTest) TestCreateInternalErr() {
-	repo := &mock.RepositoryMock{}
-
-	in := &group.Group{
-		LeaderID: t.Group.LeaderID,
-	}
-
-	usr := &user.User{}
-	repo.On("Create", in).Return(nil, errors.New("something wrong"))
-
-	userRepo := &mockUser.RepositoryMock{}
-	userRepo.On("FindOne", t.Group.LeaderID, usr).Return(t.UserMock, nil)
-	srv := NewService(repo, userRepo)
-
-	actual, err := srv.Create(context.Background(), t.CreateGroupReqMock)
-
-	st, ok := status.FromError(err)
-
-	assert.True(t.T(), ok)
-	assert.Nil(t.T(), actual)
-	assert.Equal(t.T(), codes.Internal, st.Code())
-}
-
 func (t *GroupServiceTest) TestUpdateSuccess() {
 	want := &proto.UpdateGroupResponse{Group: t.GroupDto}
 
-	t.UserMock.IsVerify = nil
-	t.UserDtoMock.IsVerify = false
-	t.UserMock.GroupID = nil
+	nonUser := &user.User{
+		Base: model.Base{
+			ID:        t.UserMock.ID,
+			CreatedAt: t.UserMock.CreatedAt,
+			UpdatedAt: t.UserMock.UpdatedAt,
+			DeletedAt: t.UserMock.DeletedAt,
+		},
+		Firstname: t.UserMock.Firstname,
+		Lastname:  t.UserMock.Lastname,
+	}
+
+	raw := &group.Group{
+		Base: model.Base{
+			ID:        t.Group.ID,
+			CreatedAt: t.Group.CreatedAt,
+			UpdatedAt: t.Group.UpdatedAt,
+			DeletedAt: t.Group.DeletedAt,
+		},
+		LeaderID: t.Group.LeaderID,
+		Token:    t.Group.Token,
+		Members:  []*user.User{nonUser},
+	}
+
 	repo := &mock.RepositoryMock{}
-	repo.On("UpdateWithLeader", t.Group.LeaderID, t.Group).Return(t.Group, nil)
+	repo.On("UpdateWithLeader", t.Group.LeaderID, raw).Return(raw, nil)
 
 	userRepo := &mockUser.RepositoryMock{}
-	srv := NewService(repo, userRepo)
+
+	fileSrv := &mockFile.ServiceMock{}
+	fileSrv.On("GetSignedUrl", t.Group.LeaderID).Return("", nil)
+
+	srv := NewService(repo, userRepo, fileSrv)
 	actual, err := srv.Update(context.Background(), t.UpdateGroupReqMock)
 
 	assert.Nil(t.T(), err)
@@ -402,13 +355,36 @@ func (t *GroupServiceTest) TestUpdateSuccess() {
 }
 
 func (t *GroupServiceTest) TestUpdateNotFound() {
-	t.UserMock.IsVerify = nil
-	t.UserMock.GroupID = nil
+	nonUser := &user.User{
+		Base: model.Base{
+			ID:        t.UserMock.ID,
+			CreatedAt: t.UserMock.CreatedAt,
+			UpdatedAt: t.UserMock.UpdatedAt,
+			DeletedAt: t.UserMock.DeletedAt,
+		},
+		Firstname: t.UserMock.Firstname,
+		Lastname:  t.UserMock.Lastname,
+	}
+
+	raw := &group.Group{
+		Base: model.Base{
+			ID:        t.Group.ID,
+			CreatedAt: t.Group.CreatedAt,
+			UpdatedAt: t.Group.UpdatedAt,
+			DeletedAt: t.Group.DeletedAt,
+		},
+		LeaderID: t.Group.LeaderID,
+		Token:    t.Group.Token,
+		Members:  []*user.User{nonUser},
+	}
+
 	repo := &mock.RepositoryMock{}
-	repo.On("UpdateWithLeader", t.Group.LeaderID, t.Group).Return(nil, errors.New("Not found group"))
+	repo.On("UpdateWithLeader", t.Group.LeaderID, raw).Return(nil, errors.New("Not found group"))
 
 	userRepo := &mockUser.RepositoryMock{}
-	srv := NewService(repo, userRepo)
+
+	fileSrv := &mockFile.ServiceMock{}
+	srv := NewService(repo, userRepo, fileSrv)
 	actual, err := srv.Update(context.Background(), t.UpdateGroupReqMock)
 
 	st, ok := status.FromError(err)
@@ -423,7 +399,9 @@ func (t *GroupServiceTest) TestUpdateMalformed() {
 	repo.On("UpdateWithLeader", t.Group.LeaderID, t.Group).Return(nil, errors.New("Not found group"))
 
 	userRepo := &mockUser.RepositoryMock{}
-	srv := NewService(repo, userRepo)
+
+	fileSrv := &mockFile.ServiceMock{}
+	srv := NewService(repo, userRepo, fileSrv)
 
 	t.UpdateGroupReqMock.Group.Id = "abc"
 
@@ -463,24 +441,17 @@ func (t *GroupServiceTest) TestJoinSuccess1() {
 		IsVerify:        t.ReservedUser.IsVerify,
 		GroupID:         utils.UUIDAdr(t.Group.ID),
 	}
-	afterJoinedUserDto := &proto.User{
-		Id:              afterJoinedUser.ID.String(),
-		Title:           afterJoinedUser.Title,
-		Firstname:       afterJoinedUser.Firstname,
-		Lastname:        afterJoinedUser.Lastname,
-		Nickname:        afterJoinedUser.Nickname,
-		StudentID:       afterJoinedUser.StudentID,
-		Faculty:         afterJoinedUser.Faculty,
-		Year:            afterJoinedUser.Year,
-		Phone:           afterJoinedUser.Phone,
-		LineID:          afterJoinedUser.LineID,
-		Email:           afterJoinedUser.Email,
-		AllergyFood:     afterJoinedUser.AllergyFood,
-		FoodRestriction: afterJoinedUser.FoodRestriction,
-		AllergyMedicine: afterJoinedUser.AllergyMedicine,
-		Disease:         afterJoinedUser.Disease,
-		CanSelectBaan:   *afterJoinedUser.CanSelectBaan,
-		IsVerify:        *afterJoinedUser.IsVerify,
+
+	prevGrp := &group.Group{
+		Base: model.Base{
+			ID:        *t.ReservedUser.GroupID,
+			CreatedAt: time.Time{},
+			UpdatedAt: time.Time{},
+			DeletedAt: gorm.DeletedAt{},
+		},
+		LeaderID: t.UserMock.ID.String(),
+		Token:    faker.Word(),
+		Members:  []*user.User{t.UserMock, t.ReservedUser},
 	}
 
 	joinGrp := &group.Group{
@@ -492,25 +463,28 @@ func (t *GroupServiceTest) TestJoinSuccess1() {
 		},
 		LeaderID: t.Group.LeaderID,
 		Token:    t.Group.Token,
-		Members:  []*user.User{t.UserMock, afterJoinedUser},
+		Members:  []*user.User{t.UserMock, t.UserMock},
 	}
 
 	want := &proto.JoinGroupResponse{Group: &proto.Group{
 		Id:       t.Group.ID.String(),
 		LeaderID: t.Group.LeaderID,
 		Token:    t.Group.Token,
-		Members:  []*proto.User{t.UserDtoMock, afterJoinedUserDto},
+		Members:  []*proto.UserInfo{t.UserDtoMock, t.UserDtoMock},
 	}}
 
 	repo := &mock.RepositoryMock{}
 	repo.On("FindGroupByToken", t.Group.Token, &group.Group{}).Return(joinGrp, nil)
-	repo.On("FindGroupById", (*t.ReservedUser.GroupID).String(), &group.Group{}).Return(joinGrp, nil)
+	repo.On("FindGroupById", (*t.ReservedUser.GroupID).String(), &group.Group{}).Return(prevGrp, nil)
 
 	userRepo := &mockUser.RepositoryMock{}
 	userRepo.On("FindOne", t.ReservedUser.ID.String(), &user.User{}).Return(t.ReservedUser, nil)
-	userRepo.On("Update", afterJoinedUser.ID.String(), afterJoinedUser).Return(afterJoinedUser, nil)
+	userRepo.On("Update", t.ReservedUser.ID.String(), afterJoinedUser).Return(t.UserMock, nil)
 
-	srv := NewService(repo, userRepo)
+	fileSrv := &mockFile.ServiceMock{}
+	fileSrv.On("GetSignedUrl", t.UserMock.ID.String()).Return("", nil)
+
+	srv := NewService(repo, userRepo, fileSrv)
 	actual, err := srv.Join(context.Background(), &proto.JoinGroupRequest{Token: t.Group.Token, UserId: t.ReservedUser.ID.String()})
 
 	assert.Nil(t.T(), err)
@@ -519,24 +493,11 @@ func (t *GroupServiceTest) TestJoinSuccess1() {
 
 //Case2 : a user is only one in the group --> expected result : the user is able to join other group, and delete the previous group
 func (t *GroupServiceTest) TestJoinSuccess2() {
-	headUserDto := &proto.User{
-		Id:              t.ReservedUser.ID.String(),
-		Title:           t.ReservedUser.Title,
-		Firstname:       t.ReservedUser.Firstname,
-		Lastname:        t.ReservedUser.Lastname,
-		Nickname:        t.ReservedUser.Nickname,
-		StudentID:       t.ReservedUser.StudentID,
-		Faculty:         t.ReservedUser.Faculty,
-		Year:            t.ReservedUser.Year,
-		Phone:           t.ReservedUser.Phone,
-		LineID:          t.ReservedUser.LineID,
-		Email:           t.ReservedUser.Email,
-		AllergyFood:     t.ReservedUser.AllergyFood,
-		FoodRestriction: t.ReservedUser.FoodRestriction,
-		AllergyMedicine: t.ReservedUser.AllergyMedicine,
-		Disease:         t.ReservedUser.Disease,
-		CanSelectBaan:   *t.ReservedUser.CanSelectBaan,
-		IsVerify:        *t.ReservedUser.IsVerify,
+	headUserDto := &proto.UserInfo{
+		Id:        t.ReservedUser.ID.String(),
+		FirstName: t.ReservedUser.Firstname,
+		LastName:  t.ReservedUser.Lastname,
+		ImageUrl:  "",
 	}
 
 	joinUser := &user.User{
@@ -564,25 +525,6 @@ func (t *GroupServiceTest) TestJoinSuccess2() {
 		IsVerify:        t.UserMock.IsVerify,
 		GroupID:         t.ReservedUser.GroupID,
 	}
-	joinUserDto := &proto.User{
-		Id:              joinUser.ID.String(),
-		Title:           joinUser.Title,
-		Firstname:       joinUser.Firstname,
-		Lastname:        joinUser.Lastname,
-		Nickname:        joinUser.Nickname,
-		StudentID:       joinUser.StudentID,
-		Faculty:         joinUser.Faculty,
-		Year:            joinUser.Year,
-		Phone:           joinUser.Phone,
-		LineID:          joinUser.LineID,
-		Email:           joinUser.Email,
-		AllergyFood:     joinUser.AllergyFood,
-		FoodRestriction: joinUser.FoodRestriction,
-		AllergyMedicine: joinUser.AllergyMedicine,
-		Disease:         joinUser.Disease,
-		CanSelectBaan:   *joinUser.CanSelectBaan,
-		IsVerify:        *joinUser.IsVerify,
-	}
 
 	joinGroup := &group.Group{
 		Base: model.Base{
@@ -593,13 +535,14 @@ func (t *GroupServiceTest) TestJoinSuccess2() {
 		},
 		LeaderID: t.ReservedUser.ID.String(),
 		Token:    faker.Word(),
-		Members:  []*user.User{t.ReservedUser, joinUser},
+		Members:  []*user.User{t.ReservedUser, t.ReservedUser},
 	}
+
 	want := &proto.JoinGroupResponse{Group: &proto.Group{
 		Id:       joinGroup.ID.String(),
 		LeaderID: joinGroup.LeaderID,
 		Token:    joinGroup.Token,
-		Members:  []*proto.User{headUserDto, joinUserDto},
+		Members:  []*proto.UserInfo{headUserDto, headUserDto},
 	}}
 
 	repo := &mock.RepositoryMock{}
@@ -611,7 +554,9 @@ func (t *GroupServiceTest) TestJoinSuccess2() {
 	userRepo.On("FindOne", t.UserDtoMock.Id, &user.User{}).Return(t.UserMock, nil)
 	userRepo.On("Update", joinUser.ID.String(), joinUser).Return(joinUser, nil)
 
-	srv := NewService(repo, userRepo)
+	fileSrv := &mockFile.ServiceMock{}
+	fileSrv.On("GetSignedUrl", t.ReservedUser.ID.String()).Return("", nil)
+	srv := NewService(repo, userRepo, fileSrv)
 	actual, err := srv.Join(context.Background(), &proto.JoinGroupRequest{Token: joinGroup.Token, UserId: t.UserDtoMock.Id})
 
 	assert.Nil(t.T(), err)
@@ -626,7 +571,8 @@ func (t *GroupServiceTest) TestJoinForbidden() {
 	userRepo := &mockUser.RepositoryMock{}
 	userRepo.On("FindOne", t.UserDtoMock.Id, &user.User{}).Return(t.UserMock, nil)
 
-	srv := NewService(repo, userRepo)
+	fileSrv := &mockFile.ServiceMock{}
+	srv := NewService(repo, userRepo, fileSrv)
 	actual, err := srv.Join(context.Background(), &proto.JoinGroupRequest{Token: t.Group.Token, UserId: t.UserDtoMock.Id})
 
 	st, ok := status.FromError(err)
@@ -642,7 +588,9 @@ func (t *GroupServiceTest) TestJoinNotFound() {
 	repo.On("FindGroupByToken", t.Group.Token, &group.Group{}).Return(nil, errors.New("Not found group"))
 
 	userRepo := &mockUser.RepositoryMock{}
-	srv := NewService(repo, userRepo)
+
+	fileSrv := &mockFile.ServiceMock{}
+	srv := NewService(repo, userRepo, fileSrv)
 	actual, err := srv.Join(context.Background(), &proto.JoinGroupRequest{Token: t.GroupDto.Token, UserId: uuid.New().String()})
 
 	st, ok := status.FromError(err)
@@ -657,7 +605,9 @@ func (t *GroupServiceTest) TestJoinMalformed() {
 	repo := &mock.RepositoryMock{}
 
 	userRepo := &mockUser.RepositoryMock{}
-	srv := NewService(repo, userRepo)
+
+	fileSrv := &mockFile.ServiceMock{}
+	srv := NewService(repo, userRepo, fileSrv)
 
 	actual, err := srv.Join(context.Background(), &proto.JoinGroupRequest{Token: t.GroupDto.Token, UserId: "abc"})
 
@@ -735,7 +685,9 @@ func (t *GroupServiceTest) TestJoinFullGroup() {
 	repo.On("FindGroupByToken", fullGroup.Token, &group.Group{}).Return(fullGroup, nil)
 
 	userRepo := &mockUser.RepositoryMock{}
-	srv := NewService(repo, userRepo)
+
+	fileSrv := &mockFile.ServiceMock{}
+	srv := NewService(repo, userRepo, fileSrv)
 
 	actual, err := srv.Join(context.Background(), &proto.JoinGroupRequest{Token: fullGroup.Token, UserId: t.UserDtoMock.Id})
 
@@ -786,7 +738,9 @@ func (t *GroupServiceTest) TestDeleteMemberSuccess() {
 	userRepo.On("FindOne", t.RemovedUser.ID.String(), &user.User{}).Return(t.RemovedUser, nil)
 	userRepo.On("Update", createdUser.ID.String(), createdUser).Return(createdUser, nil)
 
-	srv := NewService(repo, userRepo)
+	fileSrv := &mockFile.ServiceMock{}
+	fileSrv.On("GetSignedUrl", t.UserMock.ID.String()).Return("", nil)
+	srv := NewService(repo, userRepo, fileSrv)
 	actual, err := srv.DeleteMember(context.Background(), &proto.DeleteMemberGroupRequest{UserId: t.RemovedUser.ID.String(), LeaderId: t.GroupDto.LeaderID})
 
 	assert.Nil(t.T(), err)
@@ -800,7 +754,8 @@ func (t *GroupServiceTest) TestDeleteMemberForbidden() {
 	userRepo := &mockUser.RepositoryMock{}
 	userRepo.On("FindOne", t.RemovedUser.ID.String(), &user.User{}).Return(t.RemovedUser, nil)
 
-	srv := NewService(repo, userRepo)
+	fileSrv := &mockFile.ServiceMock{}
+	srv := NewService(repo, userRepo, fileSrv)
 	actual, err := srv.DeleteMember(context.Background(), &proto.DeleteMemberGroupRequest{UserId: t.RemovedUser.ID.String(), LeaderId: t.RemovedUser.ID.String()})
 
 	st, ok := status.FromError(err)
@@ -817,7 +772,8 @@ func (t *GroupServiceTest) TestDeleteMemberNotFound() {
 	userRepo := &mockUser.RepositoryMock{}
 	userRepo.On("FindOne", t.RemovedUser.ID.String(), &user.User{}).Return(t.RemovedUser, nil)
 
-	srv := NewService(repo, userRepo)
+	fileSrv := &mockFile.ServiceMock{}
+	srv := NewService(repo, userRepo, fileSrv)
 	actual, err := srv.DeleteMember(context.Background(), &proto.DeleteMemberGroupRequest{UserId: t.RemovedUser.ID.String(), LeaderId: t.GroupDto.LeaderID})
 
 	st, ok := status.FromError(err)
@@ -831,7 +787,8 @@ func (t *GroupServiceTest) TestDeleteMemberMalformed() {
 	repo := &mock.RepositoryMock{}
 	userRepo := &mockUser.RepositoryMock{}
 
-	srv := NewService(repo, userRepo)
+	fileSrv := &mockFile.ServiceMock{}
+	srv := NewService(repo, userRepo, fileSrv)
 
 	actual, err := srv.DeleteMember(context.Background(), &proto.DeleteMemberGroupRequest{UserId: "abc", LeaderId: t.GroupDto.LeaderID})
 
@@ -876,24 +833,11 @@ func (t *GroupServiceTest) TestLeaveGroupSuccess() {
 		IsVerify:        t.RemovedUser.IsVerify,
 		GroupID:         utils.UUIDAdr(in.ID),
 	}
-	updatedUserDto := &proto.User{
-		Id:              updatedUser.ID.String(),
-		Title:           updatedUser.Title,
-		Firstname:       updatedUser.Firstname,
-		Lastname:        updatedUser.Lastname,
-		Nickname:        updatedUser.Nickname,
-		StudentID:       updatedUser.StudentID,
-		Faculty:         updatedUser.Faculty,
-		Year:            updatedUser.Year,
-		Phone:           updatedUser.Phone,
-		LineID:          updatedUser.LineID,
-		Email:           updatedUser.Email,
-		AllergyFood:     updatedUser.AllergyFood,
-		FoodRestriction: updatedUser.FoodRestriction,
-		AllergyMedicine: updatedUser.AllergyMedicine,
-		Disease:         updatedUser.Disease,
-		CanSelectBaan:   *updatedUser.CanSelectBaan,
-		IsVerify:        *updatedUser.IsVerify,
+	updatedUserDto := &proto.UserInfo{
+		Id:        updatedUser.ID.String(),
+		FirstName: updatedUser.Firstname,
+		LastName:  updatedUser.Lastname,
+		ImageUrl:  "",
 	}
 
 	newGroup := &group.Group{
@@ -916,7 +860,7 @@ func (t *GroupServiceTest) TestLeaveGroupSuccess() {
 			Id:       in.ID.String(),
 			LeaderID: in.LeaderID,
 			Token:    in.Token,
-			Members:  []*proto.User{updatedUserDto},
+			Members:  []*proto.UserInfo{updatedUserDto},
 		},
 	}
 
@@ -924,7 +868,10 @@ func (t *GroupServiceTest) TestLeaveGroupSuccess() {
 	userRepo.On("FindOne", t.RemovedUser.ID.String(), &user.User{}).Return(t.RemovedUser, nil)
 	userRepo.On("Update", updatedUser.ID.String(), updatedUser).Return(updatedUser, nil)
 
-	srv := NewService(repo, userRepo)
+	fileSrv := &mockFile.ServiceMock{}
+	fileSrv.On("GetSignedUrl", t.RemovedUser.ID.String()).Return("", nil)
+
+	srv := NewService(repo, userRepo, fileSrv)
 
 	actual, err := srv.Leave(context.Background(), &proto.LeaveGroupRequest{UserId: t.RemovedUser.ID.String()})
 
@@ -939,7 +886,8 @@ func (t *GroupServiceTest) TestLeaveGroupNotFound() {
 	userRepo := &mockUser.RepositoryMock{}
 	userRepo.On("FindOne", t.RemovedUser.ID.String(), &user.User{}).Return(t.RemovedUser, nil)
 
-	srv := NewService(repo, userRepo)
+	fileSrv := &mockFile.ServiceMock{}
+	srv := NewService(repo, userRepo, fileSrv)
 
 	actual, err := srv.Leave(context.Background(), &proto.LeaveGroupRequest{UserId: t.RemovedUser.ID.String()})
 
@@ -954,7 +902,9 @@ func (t *GroupServiceTest) TestLeaveGroupMalformed() {
 	repo := &mock.RepositoryMock{}
 
 	userRepo := &mockUser.RepositoryMock{}
-	srv := NewService(repo, userRepo)
+
+	fileSrv := &mockFile.ServiceMock{}
+	srv := NewService(repo, userRepo, fileSrv)
 
 	actual, err := srv.Leave(context.Background(), &proto.LeaveGroupRequest{UserId: "abc"})
 
@@ -972,7 +922,8 @@ func (t *GroupServiceTest) TestLeaveGroupForbidden() {
 	userRepo := &mockUser.RepositoryMock{}
 	userRepo.On("FindOne", t.UserMock.ID.String(), &user.User{}).Return(t.UserMock, nil)
 
-	srv := NewService(repo, userRepo)
+	fileSrv := &mockFile.ServiceMock{}
+	srv := NewService(repo, userRepo, fileSrv)
 
 	actual, err := srv.Leave(context.Background(), &proto.LeaveGroupRequest{UserId: t.UserMock.ID.String()})
 
@@ -995,7 +946,8 @@ func (t *GroupServiceTest) TestLeaveGroupInternalErr() {
 	userRepo := &mockUser.RepositoryMock{}
 	userRepo.On("FindOne", t.RemovedUser.ID.String(), &user.User{}).Return(t.RemovedUser, nil)
 
-	srv := NewService(repo, userRepo)
+	fileSrv := &mockFile.ServiceMock{}
+	srv := NewService(repo, userRepo, fileSrv)
 
 	actual, err := srv.Leave(context.Background(), &proto.LeaveGroupRequest{UserId: t.RemovedUser.ID.String()})
 
