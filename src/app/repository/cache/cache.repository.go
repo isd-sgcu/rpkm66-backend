@@ -38,3 +38,11 @@ func (r *Repository) GetCache(key string, value interface{}) (err error) {
 
 	return json.Unmarshal([]byte(v), value)
 }
+
+func (r *Repository) RemoveCache(key string) (err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	_, err = r.client.Del(ctx, key).Result()
+	return err
+}

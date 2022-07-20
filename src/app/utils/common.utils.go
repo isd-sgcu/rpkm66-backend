@@ -1,6 +1,9 @@
 package utils
 
 import (
+	"strconv"
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -24,4 +27,13 @@ func IsDuplicatedString(in []string) bool {
 	}
 
 	return false
+}
+
+func GetCurrentTimePtr() *time.Time {
+	tmp := time.Now()
+	return &tmp
+}
+
+func GetCacheKey(userid string, eventType int32) string {
+	return userid + ":" + strconv.Itoa(int(eventType))
 }

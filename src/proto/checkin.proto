@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "src/proto";
+
+service CheckinService {
+  rpc CheckinVerify(CheckinVerifyRequest) returns (CheckinVerifyResponse){}
+  rpc CheckinConfirm(CheckinConfirmRequest) returns (CheckinConfirmResponse){}
+}
+
+// Checkin verify
+
+message CheckinVerifyRequest{
+  string id = 1;
+  int32 event_type = 2;
+}
+
+message CheckinVerifyResponse{
+  string checkin_token = 1;
+  int32 checkin_type = 2;
+}
+
+// Checkin Confirm
+
+message CheckinConfirmRequest{
+  string token = 1;
+}
+
+message CheckinConfirmResponse{
+  bool success = 1;
+}
