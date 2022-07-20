@@ -44,10 +44,8 @@ message FindByTokenGroupRequest{
 
 message FindByTokenGroupResponse{
   string id = 1;
-  string leaderID = 2;
-  string token = 3;
-  string leaderFirstName = 4;
-  string leaderLastName = 5;
+  string token = 2;
+  UserInfo leader = 3;
 }
 
 // Update

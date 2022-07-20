@@ -271,19 +271,25 @@ func (t *GroupServiceTest) TestFindOneWithCreateGroup() {
 
 func (t *GroupServiceTest) TestFindByTokenSuccess() {
 	want := &proto.FindByTokenGroupResponse{
-		Id:              t.Group.ID.String(),
-		LeaderID:        t.Group.LeaderID,
-		Token:           t.Group.Token,
-		LeaderFirstName: t.UserMock.Firstname,
-		LeaderLastName:  t.UserMock.Lastname,
+		Id:    t.Group.ID.String(),
+		Token: t.Group.Token,
+		Leader: &proto.UserInfo{
+			Id:        t.Group.LeaderID,
+			FirstName: t.UserMock.Firstname,
+			LastName:  t.UserMock.Lastname,
+			ImageUrl:  "",
+		},
 	}
 
 	repo := &mock.RepositoryMock{}
-
 	repo.On("FindGroupByToken", t.Group.Token, &group.Group{}).Return(t.Group, nil)
+
 	userRepo := &mockUser.RepositoryMock{}
 	userRepo.On("FindOne", t.UserMock.ID.String(), &user.User{}).Return(t.UserMock, nil)
+
 	fileSrv := &mockFile.ServiceMock{}
+	fileSrv.On("GetSignedUrl", t.UserMock.ID.String()).Return("", nil)
+
 	srv := NewService(repo, userRepo, fileSrv)
 	actual, err := srv.FindByToken(context.Background(), &proto.FindByTokenGroupRequest{Token: t.GroupDto.Token})
 
