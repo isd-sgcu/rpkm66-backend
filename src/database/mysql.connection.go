@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/baan"
+	baan_group "github.com/isd-sgcu/rnkm65-backend/src/app/model/baan-group-selection"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/group"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
 	"github.com/isd-sgcu/rnkm65-backend/src/config"
@@ -15,6 +16,11 @@ func InitDatabase(conf *config.Database) (db *gorm.DB, err error) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True", conf.User, conf.Password, conf.Host, strconv.Itoa(conf.Port), conf.Name)
 
 	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.SetupJoinTable(&group.Group{}, "Baans", &baan_group.BaanGroupSelection{})
 	if err != nil {
 		return nil, err
 	}

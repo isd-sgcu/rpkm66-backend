@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	bRepo "github.com/isd-sgcu/rnkm65-backend/src/app/repository/baan"
+	bgsRepo "github.com/isd-sgcu/rnkm65-backend/src/app/repository/baan-group-selection"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/repository/cache"
 	grpRepo "github.com/isd-sgcu/rnkm65-backend/src/app/repository/group"
 	ur "github.com/isd-sgcu/rnkm65-backend/src/app/repository/user"
@@ -161,14 +162,16 @@ func main() {
 	baRepo := bRepo.NewRepository(db)
 	baSrv := bSrv.NewService(baRepo, cacheRepo, conf.App)
 
+	baGrpSetRepo := bgsRepo.NewRepository(db)
+
 	groupRepo := grpRepo.NewRepository(db)
-	grpSvc := grpService.NewService(groupRepo, usrRepo, fileSrv)
+	grpSvc := grpService.NewService(groupRepo, usrRepo, baGrpSetRepo, fileSrv, conf.App)
 
 	grpc_health_v1.RegisterHealthServer(grpcServer, health.NewServer())
 	proto.RegisterUserServiceServer(grpcServer, usrSvc)
 	proto.RegisterBaanServiceServer(grpcServer, baSrv)
-
 	proto.RegisterGroupServiceServer(grpcServer, grpSvc)
+
 	reflection.Register(grpcServer)
 	go func() {
 		log.Info().

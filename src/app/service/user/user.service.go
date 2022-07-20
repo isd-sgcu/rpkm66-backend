@@ -51,11 +51,6 @@ func (s *Service) FindOne(_ context.Context, req *proto.FindOneUserRequest) (res
 		if ok {
 			switch st.Code() {
 			case codes.NotFound:
-				log.Error().
-					Err(err).
-					Str("service", "user").
-					Str("module", "find one").
-					Msg("Something wrong")
 				return &proto.FindOneUserResponse{User: RawToDto(&raw, "")}, nil
 
 			case codes.Unavailable:
@@ -63,6 +58,7 @@ func (s *Service) FindOne(_ context.Context, req *proto.FindOneUserRequest) (res
 					Err(err).
 					Str("service", "user").
 					Str("module", "find one").
+					Str("id", req.Id).
 					Msg("Something wrong")
 				return nil, err
 
@@ -71,6 +67,7 @@ func (s *Service) FindOne(_ context.Context, req *proto.FindOneUserRequest) (res
 					Err(err).
 					Str("service", "user").
 					Str("module", "find one").
+					Str("id", req.Id).
 					Msg("Error while connecting to service")
 				return nil, err
 			}
@@ -80,6 +77,7 @@ func (s *Service) FindOne(_ context.Context, req *proto.FindOneUserRequest) (res
 			Err(err).
 			Str("service", "user").
 			Str("module", "find one").
+			Str("id", req.Id).
 			Msg("Error while connecting to service")
 
 		return nil, err
@@ -93,6 +91,12 @@ func (s *Service) FindByStudentID(_ context.Context, req *proto.FindByStudentIDU
 
 	err = s.repo.FindByStudentID(req.StudentId, &result)
 	if err != nil {
+		log.Error().
+			Err(err).
+			Str("service", "user").
+			Str("module", "find one").
+			Str("student_id", req.StudentId).
+			Msg("Not found user image")
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 
@@ -116,11 +120,18 @@ func (s *Service) CreateOrUpdate(_ context.Context, req *proto.CreateOrUpdateUse
 	raw, err := DtoToRaw(req.User)
 
 	if err != nil {
+		log.Error().Err(err).
+			Str("module", "create or update").
+			Msg("Error while mapping dto to raw")
 		return nil, status.Error(codes.InvalidArgument, "invalid user id")
 	}
 
 	err = s.repo.CreateOrUpdate(raw)
 	if err != nil {
+		log.Error().Err(err).
+			Str("module", "create or update").
+			Str("student_id", raw.StudentID).
+			Msg("Error while create or update the user")
 		return nil, status.Error(codes.Internal, "failed to create user")
 	}
 

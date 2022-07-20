@@ -4,9 +4,11 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model"
+	baan_group_selection "github.com/isd-sgcu/rnkm65-backend/src/app/model/baan-group-selection"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/group"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/utils"
+	"github.com/isd-sgcu/rnkm65-backend/src/config"
 	"github.com/isd-sgcu/rnkm65-backend/src/proto"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
@@ -16,17 +18,25 @@ import (
 )
 
 type Service struct {
-	repo     IRepository
-	userRepo IUserRepository
-	fileSrv  IFileService
+	repo               IRepository
+	userRepo           IUserRepository
+	fileSrv            IFileService
+	conf               config.App
+	baanGroupSelection IBaanGroupSelectRepository
 }
 
 type IRepository interface {
 	FindGroupByToken(string, *group.Group) error
 	FindGroupById(string, *group.Group) error
+	FindGroupWithBaans(string, *group.Group) error
 	Create(*group.Group) error
 	UpdateWithLeader(string, *group.Group) error
+	RemoveAllBaan(g *group.Group) error
 	Delete(string) error
+}
+
+type IBaanGroupSelectRepository interface {
+	SaveBaansSelection(*[]*baan_group_selection.BaanGroupSelection) error
 }
 
 type IUserRepository interface {
@@ -34,12 +44,18 @@ type IUserRepository interface {
 	Update(string, *user.User) error
 }
 
-type IFileService interface {
-	GetSignedUrl(string) (string, error)
+func NewService(repo IRepository, userRepo IUserRepository, baanGroupSelectionRepo IBaanGroupSelectRepository, fileSrv IFileService, conf config.App) *Service {
+	return &Service{
+		repo:               repo,
+		userRepo:           userRepo,
+		fileSrv:            fileSrv,
+		baanGroupSelection: baanGroupSelectionRepo,
+		conf:               conf,
+	}
 }
 
-func NewService(repo IRepository, userRepo IUserRepository, fileSrv IFileService) *Service {
-	return &Service{repo: repo, userRepo: userRepo, fileSrv: fileSrv}
+type IFileService interface {
+	GetSignedUrl(string) (string, error)
 }
 
 func (s *Service) FindOne(_ context.Context, req *proto.FindOneGroupRequest) (res *proto.FindOneGroupResponse, err error) {
@@ -169,8 +185,8 @@ func (s *Service) FindByToken(_ context.Context, req *proto.FindByTokenGroupRequ
 		Token: raw.Token,
 		Leader: &proto.UserInfo{
 			Id:        usr.ID.String(),
-			FirstName: usr.Firstname,
-			LastName:  usr.Lastname,
+			Firstname: usr.Firstname,
+			Lastname:  usr.Lastname,
 			ImageUrl:  leaderUrl,
 		},
 	}, nil
@@ -470,6 +486,100 @@ func (s *Service) Leave(_ context.Context, req *proto.LeaveGroupRequest) (res *p
 	return &proto.LeaveGroupResponse{Group: grpDto}, nil
 }
 
+func (s *Service) SelectBaan(_ context.Context, req *proto.SelectBaanRequest) (res *proto.SelectBaanResponse, err error) {
+	if len(req.Baans) != s.conf.NBaan {
+		log.Error().
+			Str("service", "group").
+			Str("module", "select baan").
+			Str("user_id", req.UserId).
+			Msg("Invalid number of baan")
+		return nil, status.Error(codes.InvalidArgument, "invalid numbers of baan")
+	}
+
+	if utils.IsDuplicatedString(req.Baans) {
+		log.Error().
+			Str("service", "group").
+			Str("module", "select baan").
+			Str("user_id", req.UserId).
+			Msg("Duplicated baan")
+		return nil, status.Error(codes.InvalidArgument, "duplicated baan")
+	}
+
+	leader := &user.User{}
+	err = s.userRepo.FindOne(req.UserId, leader)
+	if err != nil {
+		return nil, status.Error(codes.NotFound, "Not found user")
+	}
+
+	result := &group.Group{}
+	err = s.repo.FindGroupWithBaans(leader.GroupID.String(), result)
+	if err != nil {
+		return nil, status.Error(codes.NotFound, "Not found group")
+	}
+
+	if leader.ID.String() != result.LeaderID {
+		log.Error().
+			Err(err).
+			Str("service", "group").
+			Str("module", "select baan").
+			Str("user_id", req.UserId).
+			Msg("Forbidden action not leader select baan")
+		return nil, status.Error(codes.PermissionDenied, "Insufficiency permission")
+	}
+
+	var baanSelections []*baan_group_selection.BaanGroupSelection
+	for i, bId := range req.Baans {
+		bId, err := uuid.Parse(bId)
+		if err != nil {
+			log.Error().
+				Err(err).
+				Str("service", "group").
+				Str("module", "select baan").
+				Str("user_id", req.UserId).
+				Msg("Duplicated baan")
+			return nil, status.Error(codes.Internal, "Cannot parse group id to int")
+		}
+
+		baanSelect := baan_group_selection.BaanGroupSelection{
+			BaanID:  &bId,
+			GroupID: &result.ID,
+			Order:   i + 1,
+		}
+
+		baanSelections = append(baanSelections, &baanSelect)
+	}
+
+	err = s.repo.RemoveAllBaan(&group.Group{Base: model.Base{ID: result.ID}})
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("service", "group").
+			Str("module", "select baan").
+			Str("user_id", req.UserId).
+			Msg("Error while clearing the baan selection")
+		return nil, status.Error(codes.Internal, "Error while clearing the baan selection")
+	}
+
+	err = s.baanGroupSelection.SaveBaansSelection(&baanSelections)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("service", "group").
+			Str("module", "select baan").
+			Str("user_id", req.UserId).
+			Msg("Error while updating the baan selection")
+		return nil, status.Error(codes.Internal, "Error while updating the baan selection")
+	}
+
+	log.Info().
+		Str("service", "group").
+		Str("module", "select baan").
+		Str("user_id", req.UserId).
+		Msg("Successfully update baan selection")
+
+	return &proto.SelectBaanResponse{Success: true}, nil
+}
+
 func DtoToRaw(in *proto.Group) (result *group.Group, err error) {
 	var members []*user.User
 	for _, usr := range in.Members {
@@ -485,8 +595,8 @@ func DtoToRaw(in *proto.Group) (result *group.Group, err error) {
 				UpdatedAt: time.Time{},
 				DeletedAt: gorm.DeletedAt{},
 			},
-			Firstname: usr.FirstName,
-			Lastname:  usr.LastName,
+			Firstname: usr.Firstname,
+			Lastname:  usr.Lastname,
 		}
 		members = append(members, newUser)
 	}
@@ -534,8 +644,8 @@ func (s *Service) GetMembersImages(users []*user.User) (result []*proto.UserInfo
 		}
 		newUser := &proto.UserInfo{
 			Id:        usr.ID.String(),
-			FirstName: usr.Firstname,
-			LastName:  usr.Lastname,
+			Firstname: usr.Firstname,
+			Lastname:  usr.Lastname,
 			ImageUrl:  url,
 		}
 		members = append(members, newUser)
