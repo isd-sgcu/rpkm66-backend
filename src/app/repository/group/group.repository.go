@@ -22,7 +22,9 @@ func (r *Repository) FindGroupById(id string, result *group.Group) error {
 }
 
 func (r *Repository) FindGroupWithBaans(id string, result *group.Group) error {
-	return r.db.Preload("Baans").First(&result, "id = ?", id).Error
+	return r.db.Preload("BaanGroupSelection", func(db *gorm.DB) *gorm.DB {
+		return db.Order("baan_group_selections.order ASC")
+	}).Preload("BaanGroupSelection.Baan").Where("id = ?", id).Find(&result).Error
 }
 
 func (r *Repository) Create(in *group.Group) error {

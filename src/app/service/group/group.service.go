@@ -158,6 +158,35 @@ func (s *Service) FindOne(_ context.Context, req *proto.FindOneGroupRequest) (re
 				Msg("Cannot connect to redis")
 			return nil, status.Error(codes.Internal, "Cannot connect to redis")
 		}
+
+		grp := &group.Group{}
+		err := s.repo.FindGroupWithBaans(usr.GroupID.String(), grp)
+		if err != nil {
+			log.Error().
+				Err(err).
+				Str("service", "group").
+				Str("module", "select baan").
+				Str("user_id", req.UserId).
+				Msg("Not found group")
+			return nil, status.Error(codes.NotFound, "Not found group")
+		}
+
+		var baans []*baanModel.Baan
+		for _, b := range grp.BaanGroupSelection {
+			baans = append(baans, b.Baan)
+		}
+
+		baanInfos = baan.RawToDtoInfoList(&baans)
+		err = s.cacheRepo.SaveCache(grp.ID.String(), &baanInfos, s.conf.BaanCacheTTL)
+		if err != nil {
+			log.Error().
+				Err(err).
+				Str("service", "group").
+				Str("module", "find one").
+				Str("student_id", usr.StudentID).
+				Msg("Cannot connect to redis")
+			return nil, status.Error(codes.Internal, "Cannot connect to redis")
+		}
 	}
 
 	grpDto, err := s.RawToDto(grp)
@@ -172,6 +201,7 @@ func (s *Service) FindOne(_ context.Context, req *proto.FindOneGroupRequest) (re
 		Str("module", "find one").
 		Str("student_id", usr.StudentID).
 		Msg("Find group success")
+
 	return &proto.FindOneGroupResponse{Group: grpDto}, nil
 }
 
@@ -606,12 +636,24 @@ func (s *Service) SelectBaan(_ context.Context, req *proto.SelectBaanRequest) (r
 	var baans []*baanModel.Baan
 	err = s.baanRepo.FindMulti(req.Baans, &baans)
 	if err != nil {
+		log.Error().
+			Err(err).
+			Str("service", "group").
+			Str("module", "select baan").
+			Str("user_id", req.UserId).
+			Msg("Not found baan")
 		return nil, status.Error(codes.NotFound, "Not found baan")
 	}
 
 	baanCache := baan.RawToDtoInfoList(&baans)
 	err = s.cacheRepo.SaveCache(result.ID.String(), &baanCache, s.conf.BaanCacheTTL)
 	if err != nil {
+		log.Error().
+			Err(err).
+			Str("service", "group").
+			Str("module", "select baan").
+			Str("user_id", req.UserId).
+			Msg("Cannot connect to redis")
 		return nil, status.Error(codes.Internal, "Cannot connect to redis")
 	}
 
