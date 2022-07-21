@@ -28,3 +28,13 @@ func (r *RepositoryMock) FindOne(id string, in *baan.Baan) error {
 
 	return args.Error(1)
 }
+
+func (r *RepositoryMock) FindMulti(ids []string, in *[]*baan.Baan) error {
+	args := r.Called(ids, in)
+
+	if args.Get(0) != nil {
+		*in = args.Get(0).([]*baan.Baan)
+	}
+
+	return args.Error(1)
+}

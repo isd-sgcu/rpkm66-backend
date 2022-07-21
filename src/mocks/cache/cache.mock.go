@@ -2,6 +2,7 @@ package cache
 
 import (
 	dto "github.com/isd-sgcu/rnkm65-backend/src/app/model/baan"
+	"github.com/isd-sgcu/rnkm65-backend/src/proto"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -27,6 +28,8 @@ func (t *RepositoryMock) GetCache(key string, v interface{}) error {
 			*v.(*[]*dto.Baan) = *args.Get(0).(*[]*dto.Baan)
 		case *dto.Baan:
 			*v.(*dto.Baan) = *args.Get(0).(*dto.Baan)
+		case *[]*proto.BaanInfo:
+			*v.(*[]*proto.BaanInfo) = *args.Get(0).(*[]*proto.BaanInfo)
 		}
 	}
 

@@ -5,13 +5,16 @@ import (
 	"github.com/bxcodec/faker/v3"
 	"github.com/google/uuid"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model"
+	"github.com/isd-sgcu/rnkm65-backend/src/app/model/baan"
 	baan_group_selection "github.com/isd-sgcu/rnkm65-backend/src/app/model/baan-group-selection"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/group"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/utils"
 	"github.com/isd-sgcu/rnkm65-backend/src/config"
 	size "github.com/isd-sgcu/rnkm65-backend/src/constant/baan"
+	mockBaan "github.com/isd-sgcu/rnkm65-backend/src/mocks/baan"
 	mockBgs "github.com/isd-sgcu/rnkm65-backend/src/mocks/baan-group-selection"
+	mockCache "github.com/isd-sgcu/rnkm65-backend/src/mocks/cache"
 	mockFile "github.com/isd-sgcu/rnkm65-backend/src/mocks/file"
 	mock "github.com/isd-sgcu/rnkm65-backend/src/mocks/group"
 	mockUser "github.com/isd-sgcu/rnkm65-backend/src/mocks/user"
@@ -188,6 +191,22 @@ func (t *GroupServiceTest) SetupTest() {
 	}
 }
 
+func createBaan() []*baan.Baan {
+	var baans []*baan.Baan
+
+	for i := 0; i < 3; i++ {
+		b := baan.Baan{
+			Base:     model.Base{ID: uuid.New()},
+			NameTH:   faker.Word(),
+			NameEN:   faker.Word(),
+			ImageUrl: faker.URL(),
+		}
+
+		baans = append(baans, &b)
+	}
+	return baans
+}
+
 func createBaansDto() []*proto.Baan {
 	var baans []*proto.Baan
 
@@ -211,6 +230,8 @@ func createBaansDto() []*proto.Baan {
 }
 
 func (t *GroupServiceTest) TestFindOneSuccess() {
+	baans := createBaan()
+
 	want := &proto.FindOneGroupResponse{Group: t.GroupDto}
 
 	repo := &mock.RepositoryMock{}
@@ -224,7 +245,13 @@ func (t *GroupServiceTest) TestFindOneSuccess() {
 	fileSrv := &mockFile.ServiceMock{}
 	fileSrv.On("GetSignedUrl", t.UserMock.ID.String()).Return("", nil)
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+	var baanIns []*proto.BaanInfo
+	cacheRepo := &mockCache.RepositoryMock{}
+	cacheRepo.On("GetCache", t.Group.ID.String(), &baanIns).Return(baans, nil)
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 	actual, err := srv.FindOne(context.Background(), &proto.FindOneGroupRequest{UserId: t.UserMock.ID.String()})
 
 	assert.Nil(t.T(), err)
@@ -242,7 +269,11 @@ func (t *GroupServiceTest) TestFindOneNotFound() {
 
 	fileSrv := &mockFile.ServiceMock{}
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 	actual, err := srv.FindOne(context.Background(), &proto.FindOneGroupRequest{UserId: t.UserMock.ID.String()})
 
 	st, ok := status.FromError(err)
@@ -261,7 +292,11 @@ func (t *GroupServiceTest) TestFindOneInvalidID() {
 
 	fileSrv := &mockFile.ServiceMock{}
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 	actual, err := srv.FindOne(context.Background(), &proto.FindOneGroupRequest{UserId: "abc"})
 
 	st, ok := status.FromError(err)
@@ -315,7 +350,11 @@ func (t *GroupServiceTest) TestFindOneWithCreateGroup() {
 	fileSrv := &mockFile.ServiceMock{}
 	fileSrv.On("GetSignedUrl", t.UserMock.ID.String()).Return("", nil)
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 	actual, err := srv.FindOne(context.Background(), &proto.FindOneGroupRequest{UserId: t.UserMock.ID.String()})
 
 	assert.Nil(t.T(), err)
@@ -346,7 +385,11 @@ func (t *GroupServiceTest) TestFindByTokenSuccess() {
 	fileSrv := &mockFile.ServiceMock{}
 	fileSrv.On("GetSignedUrl", t.UserMock.ID.String()).Return("", nil)
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 	actual, err := srv.FindByToken(context.Background(), &proto.FindByTokenGroupRequest{Token: t.GroupDto.Token})
 
 	assert.Nil(t.T(), err)
@@ -364,7 +407,11 @@ func (t *GroupServiceTest) TestFindByTokenNotFound() {
 
 	fileSrv := &mockFile.ServiceMock{}
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 	actual, err := srv.FindByToken(context.Background(), &proto.FindByTokenGroupRequest{Token: t.GroupDto.Token})
 
 	st, ok := status.FromError(err)
@@ -408,7 +455,11 @@ func (t *GroupServiceTest) TestUpdateSuccess() {
 	fileSrv := &mockFile.ServiceMock{}
 	fileSrv.On("GetSignedUrl", t.Group.LeaderID).Return("", nil)
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 
 	actual, err := srv.Update(context.Background(), t.UpdateGroupReqMock)
 
@@ -428,7 +479,11 @@ func (t *GroupServiceTest) TestUpdateNotFound() {
 
 	fileSrv := &mockFile.ServiceMock{}
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 	actual, err := srv.Update(context.Background(), t.UpdateGroupReqMock)
 
 	st, ok := status.FromError(err)
@@ -447,7 +502,12 @@ func (t *GroupServiceTest) TestUpdateMalformed() {
 	bgsRepo := &mockBgs.RepositoryMock{}
 
 	fileSrv := &mockFile.ServiceMock{}
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 
 	t.UpdateGroupReqMock.Group.Id = "abc"
 
@@ -531,7 +591,11 @@ func (t *GroupServiceTest) TestJoinSuccess1() {
 	fileSrv := &mockFile.ServiceMock{}
 	fileSrv.On("GetSignedUrl", t.UserMock.ID.String()).Return("", nil)
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 	actual, err := srv.Join(context.Background(), &proto.JoinGroupRequest{Token: t.Group.Token, UserId: t.ReservedUser.ID.String()})
 
 	assert.Nil(t.T(), err)
@@ -604,7 +668,12 @@ func (t *GroupServiceTest) TestJoinSuccess2() {
 	bgsRepo := &mockBgs.RepositoryMock{}
 	fileSrv := &mockFile.ServiceMock{}
 	fileSrv.On("GetSignedUrl", t.ReservedUser.ID.String()).Return("", nil)
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 	actual, err := srv.Join(context.Background(), &proto.JoinGroupRequest{Token: joinGroup.Token, UserId: t.UserDtoMock.Id})
 
 	assert.Nil(t.T(), err)
@@ -622,7 +691,11 @@ func (t *GroupServiceTest) TestJoinForbidden() {
 	bgsRepo := &mockBgs.RepositoryMock{}
 	fileSrv := &mockFile.ServiceMock{}
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 	actual, err := srv.Join(context.Background(), &proto.JoinGroupRequest{Token: t.Group.Token, UserId: t.UserDtoMock.Id})
 
 	st, ok := status.FromError(err)
@@ -642,7 +715,12 @@ func (t *GroupServiceTest) TestJoinNotFound() {
 	bgsRepo := &mockBgs.RepositoryMock{}
 
 	fileSrv := &mockFile.ServiceMock{}
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 	actual, err := srv.Join(context.Background(), &proto.JoinGroupRequest{Token: t.GroupDto.Token, UserId: uuid.New().String()})
 
 	st, ok := status.FromError(err)
@@ -661,7 +739,11 @@ func (t *GroupServiceTest) TestJoinMalformed() {
 	bgsRepo := &mockBgs.RepositoryMock{}
 	fileSrv := &mockFile.ServiceMock{}
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 
 	actual, err := srv.Join(context.Background(), &proto.JoinGroupRequest{Token: t.GroupDto.Token, UserId: "abc"})
 
@@ -743,7 +825,11 @@ func (t *GroupServiceTest) TestJoinFullGroup() {
 	bgsRepo := &mockBgs.RepositoryMock{}
 	fileSrv := &mockFile.ServiceMock{}
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 	actual, err := srv.Join(context.Background(), &proto.JoinGroupRequest{Token: fullGroup.Token, UserId: t.UserDtoMock.Id})
 
 	st, ok := status.FromError(err)
@@ -798,7 +884,11 @@ func (t *GroupServiceTest) TestDeleteMemberSuccess() {
 	fileSrv := &mockFile.ServiceMock{}
 	fileSrv.On("GetSignedUrl", t.UserMock.ID.String()).Return("", nil)
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 
 	actual, err := srv.DeleteMember(context.Background(), &proto.DeleteMemberGroupRequest{UserId: t.RemovedUser.ID.String(), LeaderId: t.GroupDto.LeaderID})
 
@@ -816,7 +906,12 @@ func (t *GroupServiceTest) TestDeleteMemberForbidden() {
 	bgsRepo := &mockBgs.RepositoryMock{}
 
 	fileSrv := &mockFile.ServiceMock{}
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 
 	actual, err := srv.DeleteMember(context.Background(), &proto.DeleteMemberGroupRequest{UserId: t.RemovedUser.ID.String(), LeaderId: t.RemovedUser.ID.String()})
 
@@ -837,7 +932,12 @@ func (t *GroupServiceTest) TestDeleteMemberNotFound() {
 	bgsRepo := &mockBgs.RepositoryMock{}
 
 	fileSrv := &mockFile.ServiceMock{}
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 	actual, err := srv.DeleteMember(context.Background(), &proto.DeleteMemberGroupRequest{UserId: t.RemovedUser.ID.String(), LeaderId: t.GroupDto.LeaderID})
 
 	st, ok := status.FromError(err)
@@ -854,7 +954,11 @@ func (t *GroupServiceTest) TestDeleteMemberMalformed() {
 	bgsRepo := &mockBgs.RepositoryMock{}
 	fileSrv := &mockFile.ServiceMock{}
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 
 	actual, err := srv.DeleteMember(context.Background(), &proto.DeleteMemberGroupRequest{UserId: "abc", LeaderId: t.GroupDto.LeaderID})
 
@@ -938,7 +1042,11 @@ func (t *GroupServiceTest) TestLeaveGroupSuccess() {
 	fileSrv := &mockFile.ServiceMock{}
 	fileSrv.On("GetSignedUrl", t.RemovedUser.ID.String()).Return("", nil)
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 
 	actual, err := srv.Leave(context.Background(), &proto.LeaveGroupRequest{UserId: t.RemovedUser.ID.String()})
 
@@ -956,7 +1064,11 @@ func (t *GroupServiceTest) TestLeaveGroupNotFound() {
 	bgsRepo := &mockBgs.RepositoryMock{}
 	fileSrv := &mockFile.ServiceMock{}
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 
 	actual, err := srv.Leave(context.Background(), &proto.LeaveGroupRequest{UserId: t.RemovedUser.ID.String()})
 
@@ -976,7 +1088,11 @@ func (t *GroupServiceTest) TestLeaveGroupMalformed() {
 
 	fileSrv := &mockFile.ServiceMock{}
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 
 	actual, err := srv.Leave(context.Background(), &proto.LeaveGroupRequest{UserId: "abc"})
 
@@ -997,7 +1113,11 @@ func (t *GroupServiceTest) TestLeaveGroupForbidden() {
 	bgsRepo := &mockBgs.RepositoryMock{}
 	fileSrv := &mockFile.ServiceMock{}
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 
 	actual, err := srv.Leave(context.Background(), &proto.LeaveGroupRequest{UserId: t.UserMock.ID.String()})
 
@@ -1023,7 +1143,11 @@ func (t *GroupServiceTest) TestLeaveGroupInternalErr() {
 	bgsRepo := &mockBgs.RepositoryMock{}
 	fileSrv := &mockFile.ServiceMock{}
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 
 	actual, err := srv.Leave(context.Background(), &proto.LeaveGroupRequest{UserId: t.RemovedUser.ID.String()})
 
@@ -1052,10 +1176,29 @@ func createBaansArray(groupId uuid.UUID) ([]*baan_group_selection.BaanGroupSelec
 	return baanSelections, baanIds
 }
 
+func createBaanInfo(baans []*baan.Baan) []*proto.BaanInfo {
+	var baanInfos []*proto.BaanInfo
+	for _, baan := range baans {
+
+		b := &proto.BaanInfo{
+			Id:       baan.ID.String(),
+			NameTH:   baan.NameTH,
+			NameEN:   baan.NameEN,
+			ImageUrl: baan.ImageUrl,
+		}
+
+		baanInfos = append(baanInfos, b)
+	}
+
+	return baanInfos
+}
+
 func (t *GroupServiceTest) TestUpdateBaanSelectionFirstTimeSuccess() {
 	want := &proto.SelectBaanResponse{Success: true}
 
 	baansSelection, baanIds := createBaansArray(t.Group.ID)
+	baans := createBaan()
+	baanInfos := createBaanInfo(baans)
 
 	repo := &mock.RepositoryMock{}
 	repo.On("FindGroupWithBaans", t.GroupDto.Id, &group.Group{}).Return(t.Group, nil)
@@ -1067,9 +1210,18 @@ func (t *GroupServiceTest) TestUpdateBaanSelectionFirstTimeSuccess() {
 	bgsRepo := &mockBgs.RepositoryMock{}
 	bgsRepo.On("SaveBaansSelection", &baansSelection).Return(baansSelection, nil)
 
+	cacheRepo := &mockCache.RepositoryMock{
+		V: map[string]interface{}{},
+	}
+	cacheRepo.On("SaveCache", t.Group.ID.String(), &baanInfos, t.conf.BaanCacheTTL).Return(nil)
+
 	fileSrv := &mockFile.ServiceMock{}
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+	var baanResult []*baan.Baan
+	baanRepo := &mockBaan.RepositoryMock{}
+	baanRepo.On("FindMulti", baanIds, &baanResult).Return(baans, nil)
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 
 	actual, err := srv.SelectBaan(context.Background(), &proto.SelectBaanRequest{UserId: t.UserMock.ID.String(), Baans: baanIds})
 
@@ -1090,7 +1242,11 @@ func (t *GroupServiceTest) TestUpdateBaanSelectionNotFoundGroup() {
 
 	fileSrv := &mockFile.ServiceMock{}
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 
 	actual, err := srv.SelectBaan(context.Background(), &proto.SelectBaanRequest{UserId: t.UserMock.ID.String(), Baans: baanIds})
 
@@ -1113,7 +1269,11 @@ func (t *GroupServiceTest) TestUpdateBaanSelectionDuplicatedBaan() {
 
 	fileSrv := &mockFile.ServiceMock{}
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, t.conf)
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, t.conf)
 
 	actual, err := srv.SelectBaan(context.Background(), &proto.SelectBaanRequest{UserId: t.UserMock.ID.String(), Baans: baanIds})
 
@@ -1139,7 +1299,11 @@ func testUpdateBaanSelectionInvalidNumberOfBaan(t *testing.T, userId string, baa
 
 	bgsRepo := &mockBgs.RepositoryMock{}
 
-	srv := NewService(repo, userRepo, bgsRepo, fileSrv, conf)
+	cacheRepo := &mockCache.RepositoryMock{}
+
+	baanRepo := &mockBaan.RepositoryMock{}
+
+	srv := NewService(repo, userRepo, bgsRepo, fileSrv, cacheRepo, baanRepo, conf)
 
 	actual, err := srv.SelectBaan(context.Background(), &proto.SelectBaanRequest{UserId: userId, Baans: baanIds})
 

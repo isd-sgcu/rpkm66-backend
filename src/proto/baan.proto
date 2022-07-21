@@ -34,6 +34,13 @@ message Baan{
   string imageUrl = 13;
 }
 
+message BaanInfo{
+  string id = 1;
+  string nameTH = 2;
+  string nameEN = 3;
+  string imageUrl = 4;
+}
+
 // Find All Baan
 
 message FindAllBaanRequest{

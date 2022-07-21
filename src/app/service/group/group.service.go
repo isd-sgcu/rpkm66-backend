@@ -2,11 +2,14 @@ package group
 
 import (
 	"context"
+	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model"
+	baanModel "github.com/isd-sgcu/rnkm65-backend/src/app/model/baan"
 	baan_group_selection "github.com/isd-sgcu/rnkm65-backend/src/app/model/baan-group-selection"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/group"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
+	"github.com/isd-sgcu/rnkm65-backend/src/app/service/baan"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/utils"
 	"github.com/isd-sgcu/rnkm65-backend/src/config"
 	"github.com/isd-sgcu/rnkm65-backend/src/proto"
@@ -19,7 +22,9 @@ import (
 
 type Service struct {
 	repo               IRepository
+	baanRepo           IBaanRepository
 	userRepo           IUserRepository
+	cacheRepo          ICacheRepository
 	fileSrv            IFileService
 	conf               config.App
 	baanGroupSelection IBaanGroupSelectRepository
@@ -35,8 +40,17 @@ type IRepository interface {
 	Delete(string) error
 }
 
+type ICacheRepository interface {
+	SaveCache(key string, value interface{}, ttl int) error
+	GetCache(key string, value interface{}) error
+}
+
 type IBaanGroupSelectRepository interface {
 	SaveBaansSelection(*[]*baan_group_selection.BaanGroupSelection) error
+}
+
+type IBaanRepository interface {
+	FindMulti(ids []string, result *[]*baanModel.Baan) error
 }
 
 type IUserRepository interface {
@@ -44,11 +58,13 @@ type IUserRepository interface {
 	Update(string, *user.User) error
 }
 
-func NewService(repo IRepository, userRepo IUserRepository, baanGroupSelectionRepo IBaanGroupSelectRepository, fileSrv IFileService, conf config.App) *Service {
+func NewService(repo IRepository, userRepo IUserRepository, baanGroupSelectionRepo IBaanGroupSelectRepository, fileSrv IFileService, cacheRepo ICacheRepository, baanRepo IBaanRepository, conf config.App) *Service {
 	return &Service{
 		repo:               repo,
 		userRepo:           userRepo,
+		cacheRepo:          cacheRepo,
 		fileSrv:            fileSrv,
+		baanRepo:           baanRepo,
 		baanGroupSelection: baanGroupSelectionRepo,
 		conf:               conf,
 	}
@@ -130,10 +146,26 @@ func (s *Service) FindOne(_ context.Context, req *proto.FindOneGroupRequest) (re
 		return nil, status.Error(codes.NotFound, "group not found")
 	}
 
+	var baanInfos []*proto.BaanInfo
+	err = s.cacheRepo.GetCache(usr.GroupID.String(), &baanInfos)
+	if err != nil {
+		if err != redis.Nil {
+			log.Error().
+				Err(err).
+				Str("service", "group").
+				Str("module", "find one").
+				Str("student_id", usr.StudentID).
+				Msg("Cannot connect to redis")
+			return nil, status.Error(codes.Internal, "Cannot connect to redis")
+		}
+	}
+
 	grpDto, err := s.RawToDto(grp)
 	if err != nil {
 		return nil, err
 	}
+
+	grpDto.Baans = baanInfos
 
 	log.Info().
 		Str("service", "group").
@@ -567,8 +599,20 @@ func (s *Service) SelectBaan(_ context.Context, req *proto.SelectBaanRequest) (r
 			Str("service", "group").
 			Str("module", "select baan").
 			Str("user_id", req.UserId).
-			Msg("Error while updating the baan selection")
-		return nil, status.Error(codes.Internal, "Error while updating the baan selection")
+			Msg("Not found baan")
+		return nil, status.Error(codes.NotFound, "Not found baan")
+	}
+
+	var baans []*baanModel.Baan
+	err = s.baanRepo.FindMulti(req.Baans, &baans)
+	if err != nil {
+		return nil, status.Error(codes.NotFound, "Not found baan")
+	}
+
+	baanCache := baan.RawToDtoInfoList(&baans)
+	err = s.cacheRepo.SaveCache(result.ID.String(), &baanCache, s.conf.BaanCacheTTL)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "Cannot connect to redis")
 	}
 
 	log.Info().

@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package group;
 
+import "baan.proto";
+
 option go_package = "src/proto";
 
 service GroupService {
@@ -19,6 +21,7 @@ message Group{
   string leaderID = 2;
   string token = 3;
   repeated UserInfo members = 4;
+  repeated baan.BaanInfo baans = 5;
 }
 
 message UserInfo {
