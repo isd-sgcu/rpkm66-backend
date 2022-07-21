@@ -125,6 +125,22 @@ func (s *Service) FindOneBaan(_ context.Context, req *proto.FindOneBaanRequest) 
 	return &proto.FindOneBaanResponse{Baan: RawToDto(&result)}, nil
 }
 
+func RawToDtoInfoList(in *[]*baan.Baan) []*proto.BaanInfo {
+	var result []*proto.BaanInfo
+	for _, b := range *in {
+		bi := &proto.BaanInfo{
+			Id:       b.ID.String(),
+			NameTH:   b.NameTH,
+			NameEN:   b.NameEN,
+			ImageUrl: b.ImageUrl,
+		}
+
+		result = append(result, bi)
+	}
+
+	return result
+}
+
 func RawToDtoList(in *[]*baan.Baan) []*proto.Baan {
 	var result []*proto.Baan
 	for _, b := range *in {

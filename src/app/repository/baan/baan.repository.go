@@ -20,3 +20,7 @@ func (r *Repository) FindAll(result *[]*baan.Baan) error {
 func (r *Repository) FindOne(id string, result *baan.Baan) error {
 	return r.db.First(result, "id = ?", id).Error
 }
+
+func (r *Repository) FindMulti(ids []string, result *[]*baan.Baan) error {
+	return r.db.Where("id IN ?", ids).Find(&result).Error
+}
