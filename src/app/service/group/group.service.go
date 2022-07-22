@@ -47,10 +47,11 @@ type ICacheRepository interface {
 
 type IBaanGroupSelectRepository interface {
 	SaveBaansSelection(*[]*baan_group_selection.BaanGroupSelection) error
+	FindBaans(string, *[]*baan_group_selection.BaanGroupSelection) error
 }
 
 type IBaanRepository interface {
-	FindMulti(ids []string, result *[]*baanModel.Baan) error
+	FindMulti([]string, *[]*baanModel.Baan) error
 }
 
 type IUserRepository interface {
@@ -171,12 +172,19 @@ func (s *Service) FindOne(_ context.Context, req *proto.FindOneGroupRequest) (re
 			return nil, status.Error(codes.NotFound, "Not found group")
 		}
 
-		var baans []*baanModel.Baan
-		for _, b := range grp.BaanGroupSelection {
-			baans = append(baans, b.Baan)
+		var baans []*baan_group_selection.BaanGroupSelection
+		err = s.baanGroupSelection.FindBaans(grp.ID.String(), &baans)
+		if err != nil {
+			log.Error().
+				Err(err).
+				Str("service", "group").
+				Str("module", "select baan").
+				Str("user_id", req.UserId).
+				Msg("Not found baan")
+			return nil, status.Error(codes.NotFound, "Not found baan")
 		}
 
-		baanInfos = baan.RawToDtoInfoList(&baans)
+		baanInfos = baan.RawToDtoBaanSelection(&baans)
 		err = s.cacheRepo.SaveCache(grp.ID.String(), &baanInfos, s.conf.BaanCacheTTL)
 		if err != nil {
 			log.Error().
@@ -573,13 +581,13 @@ func (s *Service) SelectBaan(_ context.Context, req *proto.SelectBaanRequest) (r
 		return nil, status.Error(codes.NotFound, "Not found user")
 	}
 
-	result := &group.Group{}
-	err = s.repo.FindGroupWithBaans(leader.GroupID.String(), result)
+	grp := &group.Group{}
+	err = s.repo.FindGroupWithBaans(leader.GroupID.String(), grp)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, "Not found group")
 	}
 
-	if leader.ID.String() != result.LeaderID {
+	if leader.ID.String() != grp.LeaderID {
 		log.Error().
 			Err(err).
 			Str("service", "group").
@@ -604,14 +612,14 @@ func (s *Service) SelectBaan(_ context.Context, req *proto.SelectBaanRequest) (r
 
 		baanSelect := baan_group_selection.BaanGroupSelection{
 			BaanID:  &bId,
-			GroupID: &result.ID,
+			GroupID: &grp.ID,
 			Order:   i + 1,
 		}
 
 		baanSelections = append(baanSelections, &baanSelect)
 	}
 
-	err = s.repo.RemoveAllBaan(&group.Group{Base: model.Base{ID: result.ID}})
+	err = s.repo.RemoveAllBaan(&group.Group{Base: model.Base{ID: grp.ID}})
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -633,8 +641,8 @@ func (s *Service) SelectBaan(_ context.Context, req *proto.SelectBaanRequest) (r
 		return nil, status.Error(codes.NotFound, "Not found baan")
 	}
 
-	var baans []*baanModel.Baan
-	err = s.baanRepo.FindMulti(req.Baans, &baans)
+	var baans []*baan_group_selection.BaanGroupSelection
+	err = s.baanGroupSelection.FindBaans(grp.ID.String(), &baans)
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -645,8 +653,8 @@ func (s *Service) SelectBaan(_ context.Context, req *proto.SelectBaanRequest) (r
 		return nil, status.Error(codes.NotFound, "Not found baan")
 	}
 
-	baanCache := baan.RawToDtoInfoList(&baans)
-	err = s.cacheRepo.SaveCache(result.ID.String(), &baanCache, s.conf.BaanCacheTTL)
+	baanCache := baan.RawToDtoBaanSelection(&baans)
+	err = s.cacheRepo.SaveCache(grp.ID.String(), &baanCache, s.conf.BaanCacheTTL)
 	if err != nil {
 		log.Error().
 			Err(err).

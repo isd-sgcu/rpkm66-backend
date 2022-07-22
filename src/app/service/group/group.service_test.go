@@ -43,7 +43,7 @@ type GroupServiceTest struct {
 	conf               config.App
 }
 
-func TestUserService(t *testing.T) {
+func TestGroupService(t *testing.T) {
 	suite.Run(t, new(GroupServiceTest))
 }
 
@@ -196,10 +196,19 @@ func createBaan() []*baan.Baan {
 
 	for i := 0; i < 3; i++ {
 		b := baan.Baan{
-			Base:     model.Base{ID: uuid.New()},
-			NameTH:   faker.Word(),
-			NameEN:   faker.Word(),
-			ImageUrl: faker.URL(),
+			Base:          model.Base{ID: uuid.New()},
+			NameTH:        faker.Word(),
+			DescriptionTH: faker.Word(),
+			NameEN:        faker.Word(),
+			DescriptionEN: faker.Word(),
+			ImageUrl:      faker.URL(),
+			Size:          size.M,
+			Facebook:      faker.Word(),
+			FacebookUrl:   faker.URL(),
+			Instagram:     faker.Word(),
+			InstagramUrl:  faker.URL(),
+			Line:          faker.Word(),
+			LineUrl:       faker.URL(),
 		}
 
 		baans = append(baans, &b)
@@ -231,6 +240,7 @@ func createBaansDto() []*proto.Baan {
 
 func (t *GroupServiceTest) TestFindOneSuccess() {
 	baans := createBaan()
+	baansSelection, _ := createBaansArray(t.Group.ID, baans)
 
 	want := &proto.FindOneGroupResponse{Group: t.GroupDto}
 
@@ -240,7 +250,9 @@ func (t *GroupServiceTest) TestFindOneSuccess() {
 	userRepo := &mockUser.RepositoryMock{}
 	userRepo.On("FindOne", t.UserMock.ID.String(), &user.User{}).Return(t.UserMock, nil)
 
+	var baansSelectionIn []*baan_group_selection.BaanGroupSelection
 	bgsRepo := &mockBgs.RepositoryMock{}
+	bgsRepo.On("FindBaans", t.Group.ID.String(), &baansSelectionIn).Return(baansSelection, nil)
 
 	fileSrv := &mockFile.ServiceMock{}
 	fileSrv.On("GetSignedUrl", t.UserMock.ID.String()).Return("", nil)
@@ -1158,7 +1170,7 @@ func (t *GroupServiceTest) TestLeaveGroupInternalErr() {
 	assert.Equal(t.T(), codes.Internal, st.Code())
 }
 
-func createBaansArray(groupId uuid.UUID) ([]*baan_group_selection.BaanGroupSelection, []string) {
+func createBaansArray(groupId uuid.UUID, baan []*baan.Baan) ([]*baan_group_selection.BaanGroupSelection, []string) {
 	var baanSelections []*baan_group_selection.BaanGroupSelection
 	var baanIds []string
 	baans := createBaansDto()
@@ -1167,6 +1179,7 @@ func createBaansArray(groupId uuid.UUID) ([]*baan_group_selection.BaanGroupSelec
 			BaanID:  utils.UUIDAdr(uuid.MustParse(b.Id)),
 			GroupID: utils.UUIDAdr(groupId),
 			Order:   order + 1,
+			Baan:    baan[order],
 		}
 
 		baanIds = append(baanIds, b.Id)
@@ -1193,11 +1206,11 @@ func createBaanInfo(baans []*baan.Baan) []*proto.BaanInfo {
 	return baanInfos
 }
 
-func (t *GroupServiceTest) TestUpdateBaanSelectionFirstTimeSuccess() {
+func (t *GroupServiceTest) TestUpdateBaanSelectionSuccess() {
 	want := &proto.SelectBaanResponse{Success: true}
 
-	baansSelection, baanIds := createBaansArray(t.Group.ID)
 	baans := createBaan()
+	baansSelection, baanIds := createBaansArray(t.Group.ID, baans)
 	baanInfos := createBaanInfo(baans)
 
 	repo := &mock.RepositoryMock{}
@@ -1207,8 +1220,27 @@ func (t *GroupServiceTest) TestUpdateBaanSelectionFirstTimeSuccess() {
 	userRepo := &mockUser.RepositoryMock{}
 	userRepo.On("FindOne", t.UserMock.ID.String(), &user.User{}).Return(t.UserMock, nil)
 
+	var baansSelectionIn []*baan_group_selection.BaanGroupSelection
+	baanSelectionSaveIn := []*baan_group_selection.BaanGroupSelection{
+		{
+			BaanID:  baansSelection[0].BaanID,
+			GroupID: baansSelection[0].GroupID,
+			Order:   1,
+		},
+		{
+			BaanID:  baansSelection[1].BaanID,
+			GroupID: baansSelection[1].GroupID,
+			Order:   2,
+		},
+		{
+			BaanID:  baansSelection[2].BaanID,
+			GroupID: baansSelection[2].GroupID,
+			Order:   3,
+		},
+	}
 	bgsRepo := &mockBgs.RepositoryMock{}
-	bgsRepo.On("SaveBaansSelection", &baansSelection).Return(baansSelection, nil)
+	bgsRepo.On("SaveBaansSelection", &baanSelectionSaveIn).Return(baansSelection, nil)
+	bgsRepo.On("FindBaans", t.Group.ID.String(), &baansSelectionIn).Return(baansSelection, nil)
 
 	cacheRepo := &mockCache.RepositoryMock{
 		V: map[string]interface{}{},
@@ -1230,7 +1262,8 @@ func (t *GroupServiceTest) TestUpdateBaanSelectionFirstTimeSuccess() {
 }
 
 func (t *GroupServiceTest) TestUpdateBaanSelectionNotFoundGroup() {
-	_, baanIds := createBaansArray(t.Group.ID)
+	baans := createBaan()
+	_, baanIds := createBaansArray(t.Group.ID, baans)
 
 	repo := &mock.RepositoryMock{}
 	repo.On("FindGroupWithBaans", t.GroupDto.Id, &group.Group{}).Return(nil, errors.New("Not found group"))
@@ -1258,7 +1291,8 @@ func (t *GroupServiceTest) TestUpdateBaanSelectionNotFoundGroup() {
 }
 
 func (t *GroupServiceTest) TestUpdateBaanSelectionDuplicatedBaan() {
-	_, baanIds := createBaansArray(t.Group.ID)
+	baans := createBaan()
+	_, baanIds := createBaansArray(t.Group.ID, baans)
 	baanIds[1] = baanIds[2]
 
 	repo := &mock.RepositoryMock{}

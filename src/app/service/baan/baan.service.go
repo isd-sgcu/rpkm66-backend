@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/go-redis/redis/v8"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/baan"
+	baan_group_selection "github.com/isd-sgcu/rnkm65-backend/src/app/model/baan-group-selection"
 	"github.com/isd-sgcu/rnkm65-backend/src/config"
 	constant "github.com/isd-sgcu/rnkm65-backend/src/constant/baan"
 	"github.com/isd-sgcu/rnkm65-backend/src/proto"
@@ -125,19 +126,18 @@ func (s *Service) FindOneBaan(_ context.Context, req *proto.FindOneBaanRequest) 
 	return &proto.FindOneBaanResponse{Baan: RawToDto(&result)}, nil
 }
 
-func RawToDtoInfoList(in *[]*baan.Baan) []*proto.BaanInfo {
+func RawToDtoBaanSelection(in *[]*baan_group_selection.BaanGroupSelection) []*proto.BaanInfo {
 	var result []*proto.BaanInfo
 	for _, b := range *in {
 		bi := &proto.BaanInfo{
-			Id:       b.ID.String(),
-			NameTH:   b.NameTH,
-			NameEN:   b.NameEN,
-			ImageUrl: b.ImageUrl,
+			Id:       b.Baan.ID.String(),
+			NameTH:   b.Baan.NameTH,
+			NameEN:   b.Baan.NameEN,
+			ImageUrl: b.Baan.ImageUrl,
 		}
 
 		result = append(result, bi)
 	}
-
 	return result
 }
 
