@@ -18,3 +18,13 @@ func (r *RepositoryMock) SaveBaansSelection(in *[]*baan_group_selection.BaanGrou
 
 	return args.Error(1)
 }
+
+func (r *RepositoryMock) FindBaans(groupId string, result *[]*baan_group_selection.BaanGroupSelection) error {
+	args := r.Called(groupId, result)
+
+	if args.Get(0) != nil {
+		*result = args.Get(0).([]*baan_group_selection.BaanGroupSelection)
+	}
+
+	return args.Error(1)
+}

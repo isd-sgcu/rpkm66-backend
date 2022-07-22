@@ -230,6 +230,7 @@ func createBaansDto() []*proto.Baan {
 }
 
 func (t *GroupServiceTest) TestFindOneSuccess() {
+	baansSelection, _ := createBaansArray(t.Group.ID)
 	baans := createBaan()
 
 	want := &proto.FindOneGroupResponse{Group: t.GroupDto}
@@ -240,7 +241,9 @@ func (t *GroupServiceTest) TestFindOneSuccess() {
 	userRepo := &mockUser.RepositoryMock{}
 	userRepo.On("FindOne", t.UserMock.ID.String(), &user.User{}).Return(t.UserMock, nil)
 
+	var baansSelectionIn []*baan_group_selection.BaanGroupSelection
 	bgsRepo := &mockBgs.RepositoryMock{}
+	bgsRepo.On("FindBaans", t.Group.ID.String(), &baansSelectionIn).Return(baansSelection, nil)
 
 	fileSrv := &mockFile.ServiceMock{}
 	fileSrv.On("GetSignedUrl", t.UserMock.ID.String()).Return("", nil)
@@ -1193,7 +1196,7 @@ func createBaanInfo(baans []*baan.Baan) []*proto.BaanInfo {
 	return baanInfos
 }
 
-func (t *GroupServiceTest) TestUpdateBaanSelectionFirstTimeSuccess() {
+func (t *GroupServiceTest) TestUpdateBaanSelectionSuccess() {
 	want := &proto.SelectBaanResponse{Success: true}
 
 	baansSelection, baanIds := createBaansArray(t.Group.ID)
@@ -1207,8 +1210,10 @@ func (t *GroupServiceTest) TestUpdateBaanSelectionFirstTimeSuccess() {
 	userRepo := &mockUser.RepositoryMock{}
 	userRepo.On("FindOne", t.UserMock.ID.String(), &user.User{}).Return(t.UserMock, nil)
 
+	var baansSelectionIn []*baan_group_selection.BaanGroupSelection
 	bgsRepo := &mockBgs.RepositoryMock{}
 	bgsRepo.On("SaveBaansSelection", &baansSelection).Return(baansSelection, nil)
+	bgsRepo.On("FindBaans", t.Group.ID.String(), &baansSelectionIn).Return(baansSelection, nil)
 
 	cacheRepo := &mockCache.RepositoryMock{
 		V: map[string]interface{}{},
