@@ -165,12 +165,21 @@ func (s *Service) Verify(_ context.Context, req *proto.VerifyUserRequest) (res *
 }
 
 func (s *Service) Update(_ context.Context, req *proto.UpdateUserRequest) (res *proto.UpdateUserResponse, err error) {
-	raw, err := DtoToRaw(req.User)
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "invalid user id")
+	raw := &user.User{
+		Title:           req.Title,
+		Firstname:       req.Firstname,
+		Lastname:        req.Lastname,
+		Nickname:        req.Nickname,
+		Phone:           req.Phone,
+		LineID:          req.LineID,
+		Email:           req.Email,
+		AllergyFood:     req.AllergyFood,
+		FoodRestriction: req.FoodRestriction,
+		AllergyMedicine: req.AllergyMedicine,
+		Disease:         req.Disease,
 	}
 
-	err = s.repo.Update(req.User.Id, raw)
+	err = s.repo.Update(req.Id, raw)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, "user not found")
 	}

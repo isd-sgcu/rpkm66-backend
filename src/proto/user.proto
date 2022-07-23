@@ -69,7 +69,18 @@ message CreateUserResponse{
 // Update
 
 message UpdateUserRequest{
-  User user = 1;
+  string id = 1;
+  string title = 2;
+  string firstname = 3;
+  string lastname = 4;
+  string nickname = 5;
+  string phone = 6;
+  string lineID = 7;
+  string email = 8;
+  string allergyFood = 9;
+  string foodRestriction = 10;
+  string allergyMedicine = 11;
+  string disease = 12;
 }
 
 message UpdateUserResponse{
