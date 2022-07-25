@@ -14,6 +14,7 @@ app:
   debug: true
   baan_cache_ttl: 900
   number_of_baan: 3
+  ci_cache_ttl: 180
 
 service:
   file: localhost:3003

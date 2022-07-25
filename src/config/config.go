@@ -29,6 +29,7 @@ type App struct {
 	Debug        bool `mapstructure:"debug"`
 	BaanCacheTTL int  `mapstructure:"baan_cache_ttl"`
 	NBaan        int  `mapstructure:"number_of_baan"`
+	CICacheTTL   int  `mapstructure:"ci_cache_ttl"`
 }
 
 type Config struct {

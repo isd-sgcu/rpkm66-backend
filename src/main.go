@@ -4,11 +4,13 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	cir "github.com/isd-sgcu/rnkm65-backend/src/app/repository/checkin"
 	bRepo "github.com/isd-sgcu/rnkm65-backend/src/app/repository/baan"
 	bgsRepo "github.com/isd-sgcu/rnkm65-backend/src/app/repository/baan-group-selection"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/repository/cache"
 	grpRepo "github.com/isd-sgcu/rnkm65-backend/src/app/repository/group"
 	ur "github.com/isd-sgcu/rnkm65-backend/src/app/repository/user"
+	csr "github.com/isd-sgcu/rnkm65-backend/src/app/service/checkin"
 	bSrv "github.com/isd-sgcu/rnkm65-backend/src/app/service/baan"
 	fSrv "github.com/isd-sgcu/rnkm65-backend/src/app/service/file"
 	grpService "github.com/isd-sgcu/rnkm65-backend/src/app/service/group"
@@ -159,6 +161,9 @@ func main() {
 	usrRepo := ur.NewRepository(db)
 	usrSvc := us.NewService(usrRepo, fileSrv)
 
+	ciRepo := cir.NewRepository(db)
+	ciSvc := csr.NewService(ciRepo, cacheRepo, conf.App)
+
 	baRepo := bRepo.NewRepository(db)
 	baSrv := bSrv.NewService(baRepo, cacheRepo, conf.App)
 
@@ -169,6 +174,7 @@ func main() {
 
 	grpc_health_v1.RegisterHealthServer(grpcServer, health.NewServer())
 	proto.RegisterUserServiceServer(grpcServer, usrSvc)
+	proto.RegisterCheckinServiceServer(grpcServer, ciSvc)
 	proto.RegisterBaanServiceServer(grpcServer, baSrv)
 	proto.RegisterGroupServiceServer(grpcServer, grpSvc)
 

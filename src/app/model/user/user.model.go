@@ -4,10 +4,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model"
 	"gorm.io/gorm"
+	"github.com/isd-sgcu/rnkm65-backend/src/app/model/checkin"
 )
 
 type User struct {
 	model.Base
+	Checkin         []*checkin.Checkin
 	Title           string     `json:"title" gorm:"type:VARCHAR(10)"`
 	Firstname       string     `json:"firstname" gorm:"type:tinytext"`
 	Lastname        string     `json:"lastname" gorm:"type:tinytext"`

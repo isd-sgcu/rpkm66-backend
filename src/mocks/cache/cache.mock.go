@@ -2,6 +2,7 @@ package cache
 
 import (
 	dto "github.com/isd-sgcu/rnkm65-backend/src/app/model/baan"
+	"github.com/isd-sgcu/rnkm65-backend/src/app/model/checkin"
 	"github.com/isd-sgcu/rnkm65-backend/src/proto"
 	"github.com/stretchr/testify/mock"
 )
@@ -30,8 +31,17 @@ func (t *RepositoryMock) GetCache(key string, v interface{}) error {
 			*v.(*dto.Baan) = *args.Get(0).(*dto.Baan)
 		case *[]*proto.BaanInfo:
 			*v.(*[]*proto.BaanInfo) = *args.Get(0).(*[]*proto.BaanInfo)
+		case *checkin.CheckinToken:
+			*v.(*checkin.CheckinToken) = *args.Get(0).(*checkin.CheckinToken)
+		case *checkin.TokenInfo:
+			*v.(*checkin.TokenInfo) = *args.Get(0).(*checkin.TokenInfo)
 		}
 	}
 
 	return args.Error(1)
+}
+
+func (t *RepositoryMock) RemoveCache(key string) (err error) {
+	delete(t.V, key)
+	return err
 }
