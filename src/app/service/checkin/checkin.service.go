@@ -110,7 +110,7 @@ func (s *Service) CheckinConfirm(_ context.Context, req *proto.CheckinConfirmReq
 	err := s.cache.GetCache(req.Token, cached)
 
 	if err == redis.Nil {
-		return nil, status.Error(codes.Unauthenticated, "Invalid token")
+		return nil, status.Error(codes.PermissionDenied, "Invalid token")
 	}
 
 	defer func() {
