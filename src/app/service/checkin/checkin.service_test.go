@@ -148,7 +148,7 @@ func (t *CheckinServiceTest) TestCheckinVerifyInvalidToken() {
 	st, ok := status.FromError(err)
 
 	assert.True(t.T(), ok)
-	assert.Equal(t.T(), codes.Unauthenticated, st.Code())
+	assert.Equal(t.T(), codes.PermissionDenied, st.Code())
 }
 
 func (t *CheckinServiceTest) TestCheckinConfirmUnknown() {
