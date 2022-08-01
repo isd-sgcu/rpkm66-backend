@@ -59,9 +59,10 @@ func (t *UserServiceTest) SetupTest() {
 		FoodRestriction: faker.Word(),
 		AllergyMedicine: faker.Word(),
 		Disease:         faker.Word(),
-		GroupID:         utils.UUIDAdr(uuid.New()),
 		CanSelectBaan:   utils.BoolAdr(true),
 		IsVerify:        utils.BoolAdr(true),
+		GroupID:         utils.UUIDAdr(uuid.New()),
+		BaanID:          utils.UUIDAdr(uuid.New()),
 	}
 
 	t.Event = &event.Event{
@@ -107,6 +108,7 @@ func (t *UserServiceTest) SetupTest() {
 		Disease:         t.User.Disease,
 		CanSelectBaan:   *t.User.CanSelectBaan,
 		IsVerify:        *t.User.IsVerify,
+		BaanId:          t.User.BaanID.String(),
 	}
 
 	t.CreateUserReqMock = &proto.CreateUserRequest{
@@ -127,7 +129,7 @@ func (t *UserServiceTest) SetupTest() {
 			Disease:         t.User.Disease,
 			CanSelectBaan:   *t.User.CanSelectBaan,
 			IsVerify:        *t.User.IsVerify,
-			GroupId:         t.User.GroupID.String(),
+			BaanId:          t.User.BaanID.String(),
 		},
 	}
 
@@ -305,7 +307,7 @@ func (t *UserServiceTest) TestCreateSuccess() {
 		AllergyMedicine: t.User.AllergyMedicine,
 		Disease:         t.User.Disease,
 		CanSelectBaan:   t.User.CanSelectBaan,
-		GroupID:         t.User.GroupID,
+		BaanID:          t.User.BaanID,
 	}
 
 	repo.On("Create", in).Return(t.User, nil)
@@ -340,7 +342,7 @@ func (t *UserServiceTest) TestCreateInternalErr() {
 		AllergyMedicine: t.User.AllergyMedicine,
 		Disease:         t.User.Disease,
 		CanSelectBaan:   t.User.CanSelectBaan,
-		GroupID:         t.User.GroupID,
+		BaanID:          t.User.BaanID,
 	}
 
 	repo.On("Create", in).Return(nil, errors.New("something wrong"))

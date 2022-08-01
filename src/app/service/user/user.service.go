@@ -238,6 +238,7 @@ func (s *Service) GetUserEstamp(_ context.Context, req *proto.GetUserEstampReque
 func DtoToRaw(in *proto.User) (result *user.User, err error) {
 	var id uuid.UUID
 	var groupId *uuid.UUID
+	var baanId *uuid.UUID
 
 	if in.Id != "" {
 		id, err = uuid.Parse(in.Id)
@@ -246,16 +247,16 @@ func DtoToRaw(in *proto.User) (result *user.User, err error) {
 		}
 	}
 
-	if in.GroupId != "" {
-		gId, err := uuid.Parse(in.GroupId)
+	if in.BaanId != "" {
+		bId, err := uuid.Parse(in.BaanId)
 		if err != nil {
 			return nil, err
 		}
 
-		groupId = &gId
+		baanId = &bId
 
-		if gId == uuid.Nil {
-			groupId = nil
+		if bId == uuid.Nil {
+			baanId = nil
 		}
 	}
 
@@ -281,17 +282,24 @@ func DtoToRaw(in *proto.User) (result *user.User, err error) {
 		AllergyMedicine: in.AllergyMedicine,
 		Disease:         in.Disease,
 		GroupID:         groupId,
+		BaanID:          baanId,
 		CanSelectBaan:   &in.CanSelectBaan,
 	}, nil
 }
 
 func RawToDto(in *user.User, imgUrl string) *proto.User {
+	var baanId string
+
 	if in.IsVerify == nil {
 		in.IsVerify = utils.BoolAdr(false)
 	}
 
 	if in.CanSelectBaan == nil {
 		in.CanSelectBaan = utils.BoolAdr(false)
+	}
+
+	if in.BaanID != nil {
+		baanId = in.BaanID.String()
 	}
 
 	return &proto.User{
@@ -313,6 +321,7 @@ func RawToDto(in *user.User, imgUrl string) *proto.User {
 		ImageUrl:        imgUrl,
 		CanSelectBaan:   *in.CanSelectBaan,
 		IsVerify:        *in.IsVerify,
+		BaanId:          baanId,
 	}
 }
 
