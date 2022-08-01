@@ -49,10 +49,10 @@ func (r *Repository) Delete(id string) error {
 
 func (r *Repository) ConfirmEstamp(uId string, thisUser *user.User, thisEvent *event.Event) error {
 	//Add this estamp to user
-	return r.db.Model(&thisUser).Where("id = ?", uId).Association("Events").Append(&thisEvent)
+	return r.db.Model(thisUser).Where("id = ?", uId).Omit("Events.*").Association("Events").Append(thisEvent)
 }
 
 func (r *Repository) GetUserEstamp(uId string, thisUser *user.User, results *[]*event.Event) error {
 	//Get all estamp that this user has
-	return r.db.Model(&thisUser).Where("id = ?", uId).Association("Events").Find(&results)
+	return r.db.Model(thisUser).Where("user_id", uId).Association("Events").Find(&results)
 }
