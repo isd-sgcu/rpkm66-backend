@@ -207,7 +207,19 @@ func (s *Service) Delete(_ context.Context, req *proto.DeleteUserRequest) (res *
 
 func (s *Service) ConfirmEstamp(_ context.Context, req *proto.ConfirmEstampRequest) (res *proto.ConfirmEstampResponse, err error) {
 	var event event.Event
-	var user user.User
+
+	uid, err := uuid.Parse(req.UId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	user := user.User{
+		Base: model.Base{
+			ID: uid,
+		},
+	}
+
 	err = s.eventRepo.FindEventByID(req.EId, &event)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, "event not found")
@@ -222,7 +234,18 @@ func (s *Service) ConfirmEstamp(_ context.Context, req *proto.ConfirmEstampReque
 }
 
 func (s *Service) GetUserEstamp(_ context.Context, req *proto.GetUserEstampRequest) (res *proto.GetUserEstampResponse, err error) {
-	var user user.User
+	uid, err := uuid.Parse(req.UId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	user := user.User{
+		Base: model.Base{
+			ID: uid,
+		},
+	}
+
 	var events []*event.Event
 
 	err = s.repo.GetUserEstamp(req.UId, &user, &events)

@@ -2,6 +2,9 @@ package user
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/bxcodec/faker/v3"
 	"github.com/google/uuid"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model"
@@ -18,8 +21,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
-	"testing"
-	"time"
 )
 
 type UserServiceTest struct {
@@ -63,6 +64,56 @@ func (t *UserServiceTest) SetupTest() {
 		IsVerify:        utils.BoolAdr(true),
 		GroupID:         utils.UUIDAdr(uuid.New()),
 		BaanID:          utils.UUIDAdr(uuid.New()),
+	}
+
+	t.Event = &event.Event{
+		Base: model.Base{
+			ID:        uuid.New(),
+			CreatedAt: time.Time{},
+			UpdatedAt: time.Time{},
+			DeletedAt: gorm.DeletedAt{},
+		},
+		NameTH:        faker.Word(),
+		DescriptionTH: faker.Paragraph(),
+		NameEN:        faker.Word(),
+		DescriptionEN: faker.Paragraph(),
+		Code:          faker.Word(),
+		ImageURL:      faker.Paragraph(),
+	}
+
+	t.EventDto = &proto.Event{
+		Id:            t.Event.ID.String(),
+		NameTH:        t.Event.NameTH,
+		DescriptionTH: t.Event.DescriptionTH,
+		NameEN:        t.Event.NameEN,
+		DescriptionEN: t.Event.DescriptionEN,
+		Code:          t.Event.Code,
+		ImageURL:      t.Event.ImageURL,
+	}
+
+	t.Event = &event.Event{
+		Base: model.Base{
+			ID:        uuid.New(),
+			CreatedAt: time.Time{},
+			UpdatedAt: time.Time{},
+			DeletedAt: gorm.DeletedAt{},
+		},
+		NameTH:        faker.Word(),
+		DescriptionTH: faker.Paragraph(),
+		NameEN:        faker.Word(),
+		DescriptionEN: faker.Paragraph(),
+		Code:          faker.Word(),
+		ImageURL:      faker.Paragraph(),
+	}
+
+	t.EventDto = &proto.Event{
+		Id:            t.Event.ID.String(),
+		NameTH:        t.Event.NameTH,
+		DescriptionTH: t.Event.DescriptionTH,
+		NameEN:        t.Event.NameEN,
+		DescriptionEN: t.Event.DescriptionEN,
+		Code:          t.Event.Code,
+		ImageURL:      t.Event.ImageURL,
 	}
 
 	t.Event = &event.Event{
@@ -175,7 +226,11 @@ func (t *UserServiceTest) TestConfirmEstampSuccess() {
 	eventSrv := &eMock.RepositoryMock{}
 
 	eventSrv.On("FindEventByID", t.Event.ID.String(), &event.Event{}).Return(t.Event, nil)
-	repo.On("ConfirmEstamp", t.User.ID.String(), &user.User{}, t.Event).Return(nil, nil)
+	repo.On("ConfirmEstamp", t.User.ID.String(), &user.User{
+		Base: model.Base{
+			ID: t.User.ID,
+		},
+	}, t.Event).Return(nil, nil)
 
 	srv := NewService(repo, fileSrv, eventSrv)
 	actual, err := srv.ConfirmEstamp(context.Background(), &proto.ConfirmEstampRequest{
@@ -194,7 +249,11 @@ func (t *UserServiceTest) TestGetUserEstampSuccess() {
 	var eventsIn []*event.Event
 
 	r := mock.RepositoryMock{}
-	r.On("GetUserEstamp", t.User.ID.String(), &user.User{}, &eventsIn).Return(eventList, nil)
+	r.On("GetUserEstamp", t.User.ID.String(), &user.User{
+		Base: model.Base{
+			ID: t.User.ID,
+		},
+	}, &eventsIn).Return(eventList, nil)
 
 	fileSrv := &fMock.ServiceMock{}
 	eventSrv := &eMock.RepositoryMock{}
