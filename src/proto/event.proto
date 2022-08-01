@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package event;
+
+option go_package = "src/proto";
+
+service EventService {
+  rpc FindAllEvent(FindAllEventRequest) returns (FindAllEventResponse){}
+  rpc FindEventByID(FindEventByIDRequest) returns(FindEventByIDResponse) {}
+  rpc Create(CreateEventRequest) returns (CreateEventResponse){}
+  rpc Update(UpdateEventRequest) returns (UpdateEventResponse){}
+  rpc Delete(DeleteEventRequest) returns (DeleteEventResponse){}
+  rpc FindAllEventWithType(FindAllEventWithTypeRequest) returns (FindAllEventWithTypeResponse){}
+}
+
+message Event{
+  string id = 1;
+  string nameTH = 2;
+  string descriptionTH = 3;
+  string nameEN = 4;
+  string descriptionEN = 5;
+  string code = 6;
+  string imageURL = 7;
+}
+
+//FindAll
+
+message FindAllEventRequest{
+    string id = 1;
+}
+  
+message FindAllEventResponse {
+    repeated Event event = 1;
+}
+
+
+// Find By Event ID
+
+message FindEventByIDRequest{
+  string id = 1;
+}
+
+message FindEventByIDResponse{
+  Event event = 1;
+}
+
+// Create
+
+message CreateEventRequest{
+  Event event = 1;
+}
+
+message CreateEventResponse{
+  Event event = 1;
+}
+
+// Update
+
+message UpdateEventRequest{
+  Event event = 1;
+}
+
+message UpdateEventResponse{
+  Event event = 1;
+}
+
+// Delete
+
+message DeleteEventRequest{
+  string id = 1;
+}
+
+message DeleteEventResponse{
+  bool success = 1;
+}
+
+// FindAllEventWithType
+
+message FindAllEventWithTypeRequest{
+  string eventType = 1;
+}
+
+message FindAllEventWithTypeResponse{
+  repeated Event event = 1;
+}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model"
+	"github.com/isd-sgcu/rnkm65-backend/src/app/model/event"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/utils"
 	"github.com/isd-sgcu/rnkm65-backend/src/proto"
@@ -15,8 +16,9 @@ import (
 )
 
 type Service struct {
-	repo    IRepository
-	fileSrv IFileService
+	repo      IRepository
+	eventRepo IEventRepository
+	fileSrv   IFileService
 }
 
 type IRepository interface {
@@ -27,14 +29,21 @@ type IRepository interface {
 	Verify(string) error
 	Delete(string) error
 	CreateOrUpdate(*user.User) error
+	ConfirmEstamp(string, *user.User, *event.Event) error
+	GetUserEstamp(string, *user.User, *[]*event.Event) error
+}
+
+type IEventRepository interface {
+	FindEventByID(id string, result *event.Event) error
+	FindAllEvent(result *[]*event.Event) error
 }
 
 type IFileService interface {
 	GetSignedUrl(string) (string, error)
 }
 
-func NewService(repo IRepository, fileSrv IFileService) *Service {
-	return &Service{repo: repo, fileSrv: fileSrv}
+func NewService(repo IRepository, fileSrv IFileService, eventRepo IEventRepository) *Service {
+	return &Service{repo: repo, fileSrv: fileSrv, eventRepo: eventRepo}
 }
 
 func (s *Service) FindOne(_ context.Context, req *proto.FindOneUserRequest) (res *proto.FindOneUserResponse, err error) {
@@ -190,10 +199,40 @@ func (s *Service) Update(_ context.Context, req *proto.UpdateUserRequest) (res *
 func (s *Service) Delete(_ context.Context, req *proto.DeleteUserRequest) (res *proto.DeleteUserResponse, err error) {
 	err = s.repo.Delete(req.Id)
 	if err != nil {
-		return nil, status.Error(codes.NotFound, "user not found")
+		return nil, status.Error(codes.NotFound, "something wrong")
 	}
 
 	return &proto.DeleteUserResponse{Success: true}, nil
+}
+
+func (s *Service) ConfirmEstamp(_ context.Context, req *proto.ConfirmEstampRequest) (res *proto.ConfirmEstampResponse, err error) {
+	var event event.Event
+	var user user.User
+	err = s.eventRepo.FindEventByID(req.EId, &event)
+	if err != nil {
+		return nil, status.Error(codes.NotFound, "event not found")
+	}
+
+	err = s.repo.ConfirmEstamp(req.UId, &user, &event)
+	if err != nil {
+		return nil, status.Error(codes.NotFound, "something wrong")
+	}
+
+	return &proto.ConfirmEstampResponse{}, nil
+}
+
+func (s *Service) GetUserEstamp(_ context.Context, req *proto.GetUserEstampRequest) (res *proto.GetUserEstampResponse, err error) {
+	var user user.User
+	var events []*event.Event
+
+	err = s.repo.GetUserEstamp(req.UId, &user, &events)
+	if err != nil {
+		return nil, status.Error(codes.NotFound, "something wrong")
+	}
+
+	return &proto.GetUserEstampResponse{
+		EventList: EventRawToDtoList(&events),
+	}, nil
 }
 
 func DtoToRaw(in *proto.User) (result *user.User, err error) {
@@ -275,4 +314,25 @@ func RawToDto(in *user.User, imgUrl string) *proto.User {
 		CanSelectBaan:   *in.CanSelectBaan,
 		IsVerify:        *in.IsVerify,
 	}
+}
+
+func EventRawToDto(in *event.Event) *proto.Event {
+	return &proto.Event{
+		Id:            in.ID.String(),
+		NameTH:        in.NameTH,
+		DescriptionTH: in.DescriptionTH,
+		NameEN:        in.NameEN,
+		DescriptionEN: in.DescriptionEN,
+		Code:          in.Code,
+		ImageURL:      in.ImageURL,
+	}
+}
+
+func EventRawToDtoList(in *[]*event.Event) []*proto.Event {
+	var result []*proto.Event
+	for _, e := range *in {
+		result = append(result, EventRawToDto(e))
+	}
+
+	return result
 }

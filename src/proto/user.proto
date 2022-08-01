@@ -1,5 +1,5 @@
 syntax = "proto3";
-
+import "event.proto";
 package user;
 
 option go_package = "src/proto";
@@ -12,6 +12,8 @@ service UserService {
   rpc Verify(VerifyUserRequest) returns (VerifyUserResponse){}
   rpc Delete(DeleteUserRequest) returns (DeleteUserResponse){}
   rpc CreateOrUpdate(CreateOrUpdateUserRequest) returns (CreateOrUpdateUserResponse){}
+  rpc ConfirmEstamp(ConfirmEstampRequest) returns (ConfirmEstampResponse){}
+  rpc GetUserEstamp(GetUserEstampRequest) returns (GetUserEstampResponse){}
 }
 
 message User{
@@ -34,6 +36,7 @@ message User{
   bool canSelectBaan = 17;
   bool isVerify = 18;
   string groupId = 19;
+
 }
 
 // FindOne
@@ -115,4 +118,23 @@ message VerifyUserRequest{
 
 message VerifyUserResponse{
   bool success = 1;
+}
+
+// ConfirmEstamp
+message ConfirmEstampRequest {
+  string uId = 1;
+  string eId = 2;
+}
+
+message ConfirmEstampResponse {
+
+}
+
+// GetUserEstamp
+message GetUserEstampRequest {
+  string uId = 1;
+}
+
+message GetUserEstampResponse {
+  repeated event.Event eventList = 1;
 }

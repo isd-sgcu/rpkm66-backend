@@ -5,6 +5,7 @@ import (
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/baan"
 	baan_group "github.com/isd-sgcu/rnkm65-backend/src/app/model/baan-group-selection"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/checkin"
+	"github.com/isd-sgcu/rnkm65-backend/src/app/model/event"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/group"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
 	"github.com/isd-sgcu/rnkm65-backend/src/config"
@@ -22,11 +23,8 @@ func InitDatabase(conf *config.Database) (db *gorm.DB, err error) {
 	}
 
 	err = db.SetupJoinTable(&group.Group{}, "Baans", &baan_group.BaanGroupSelection{})
-	if err != nil {
-		return nil, err
-	}
 
-	err = db.AutoMigrate(checkin.Checkin{}, group.Group{}, baan.Baan{}, user.User{})
+	err = db.AutoMigrate(checkin.Checkin{}, group.Group{}, baan.Baan{}, user.User{}, event.Event{})
 	if err != nil {
 		return nil, err
 	}

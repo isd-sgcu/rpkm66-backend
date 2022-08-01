@@ -4,14 +4,16 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	cir "github.com/isd-sgcu/rnkm65-backend/src/app/repository/checkin"
 	bRepo "github.com/isd-sgcu/rnkm65-backend/src/app/repository/baan"
 	bgsRepo "github.com/isd-sgcu/rnkm65-backend/src/app/repository/baan-group-selection"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/repository/cache"
+	cir "github.com/isd-sgcu/rnkm65-backend/src/app/repository/checkin"
+	evtRepo "github.com/isd-sgcu/rnkm65-backend/src/app/repository/event"
 	grpRepo "github.com/isd-sgcu/rnkm65-backend/src/app/repository/group"
 	ur "github.com/isd-sgcu/rnkm65-backend/src/app/repository/user"
-	csr "github.com/isd-sgcu/rnkm65-backend/src/app/service/checkin"
 	bSrv "github.com/isd-sgcu/rnkm65-backend/src/app/service/baan"
+	csr "github.com/isd-sgcu/rnkm65-backend/src/app/service/checkin"
+	evtService "github.com/isd-sgcu/rnkm65-backend/src/app/service/event"
 	fSrv "github.com/isd-sgcu/rnkm65-backend/src/app/service/file"
 	grpService "github.com/isd-sgcu/rnkm65-backend/src/app/service/group"
 	us "github.com/isd-sgcu/rnkm65-backend/src/app/service/user"
@@ -158,8 +160,11 @@ func main() {
 	fileClient := proto.NewFileServiceClient(fileConn)
 	fileSrv := fSrv.NewService(fileClient)
 
+	eventRepo := evtRepo.NewRepository(db)
+	evtSvc := evtService.NewService(eventRepo)
+
 	usrRepo := ur.NewRepository(db)
-	usrSvc := us.NewService(usrRepo, fileSrv)
+	usrSvc := us.NewService(usrRepo, fileSrv, eventRepo)
 
 	ciRepo := cir.NewRepository(db)
 	ciSvc := csr.NewService(ciRepo, cacheRepo, conf.App)
@@ -178,6 +183,7 @@ func main() {
 	proto.RegisterBaanServiceServer(grpcServer, baSrv)
 	proto.RegisterGroupServiceServer(grpcServer, grpSvc)
 
+	proto.RegisterEventServiceServer(grpcServer, evtSvc)
 	reflection.Register(grpcServer)
 	go func() {
 		log.Info().

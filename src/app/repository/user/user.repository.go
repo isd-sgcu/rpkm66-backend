@@ -1,6 +1,7 @@
 package user
 
 import (
+	"github.com/isd-sgcu/rnkm65-backend/src/app/model/event"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
 	"gorm.io/gorm"
 )
@@ -44,4 +45,14 @@ func (r *Repository) Update(id string, result *user.User) error {
 
 func (r *Repository) Delete(id string) error {
 	return r.db.Where("id = ?", id).Delete(&user.User{}).Error
+}
+
+func (r *Repository) ConfirmEstamp(uId string, thisUser *user.User, thisEvent *event.Event) error {
+	//Add this estamp to user
+	return r.db.Model(&thisUser).Where("id = ?", uId).Association("Events").Append(&thisEvent)
+}
+
+func (r *Repository) GetUserEstamp(uId string, thisUser *user.User, results *[]*event.Event) error {
+	//Get all estamp that this user has
+	return r.db.Model(&thisUser).Where("id = ?", uId).Association("Events").Find(&results)
 }
