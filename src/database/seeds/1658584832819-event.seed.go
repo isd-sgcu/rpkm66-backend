@@ -15,6 +15,7 @@ func (s Seed) EventSeed1658584832819() error {
 			Code:          faker.Word(),
 			ImageURL:      faker.URL(),
 			EventType:     "estamp",
+			Order:         i + 1,
 		}
 		err := s.db.Create(&event).Error
 
