@@ -1,16 +1,18 @@
 package seed
 
 import (
-	"github.com/bxcodec/faker/v3"
-	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
 	"strconv"
 	"time"
+
+	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
+
+	"github.com/bxcodec/faker/v3"
 )
 
 func (s Seed) UserSeed1655751437484() error {
 	for i := 0; i < 10; i++ {
 		usr := user.User{
-			Title:           faker.Word(),
+			Title:           getTitle(),
 			Firstname:       faker.FirstName(),
 			Lastname:        faker.LastName(),
 			Nickname:        faker.Name(),
@@ -32,4 +34,16 @@ func (s Seed) UserSeed1655751437484() error {
 		}
 	}
 	return nil
+}
+
+func min(a, b int) int {
+	if a > b {
+		return b
+	}
+	return a
+}
+
+func getTitle() string {
+	title := faker.Word()
+	return title[0:min(10, len(title))]
 }
