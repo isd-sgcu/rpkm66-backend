@@ -1,7 +1,9 @@
 package seed
 
 import (
+	"github.com/bxcodec/faker/v3"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/baan"
+	"github.com/isd-sgcu/rnkm65-backend/src/app/model/event"
 	constant "github.com/isd-sgcu/rnkm65-backend/src/constant/baan"
 )
 
@@ -270,5 +272,98 @@ var baans = []baan.Baan{
 		InstagramUrl:  "https://instagram.com/baankohchula",
 		Line:          "",
 		LineUrl:       "",
+	},
+}
+
+var events = []event.Event{
+	{
+		NameTH:        faker.Word(),
+		DescriptionTH: faker.Sentence(),
+		NameEN:        faker.Word(),
+		DescriptionEN: faker.Sentence(),
+		Code:          faker.Word(),
+		ImageURL:      "https://storage.googleapis.com/rnkm-public/E-Stamp-01.svg",
+		EventType:     "estamp",
+		Order:         1,
+	},
+	{
+		NameTH:        faker.Word(),
+		DescriptionTH: faker.Sentence(),
+		NameEN:        faker.Word(),
+		DescriptionEN: faker.Sentence(),
+		Code:          faker.Word(),
+		ImageURL:      "https://storage.googleapis.com/rnkm-public/E-Stamp-02.svg",
+		EventType:     "estamp",
+		Order:         2,
+	},
+	{
+		NameTH:        faker.Word(),
+		DescriptionTH: faker.Sentence(),
+		NameEN:        faker.Word(),
+		DescriptionEN: faker.Sentence(),
+		Code:          faker.Word(),
+		ImageURL:      "https://storage.googleapis.com/rnkm-public/E-Stamp-03.svg",
+		EventType:     "estamp",
+		Order:         3,
+	},
+	{
+		NameTH:        faker.Word(),
+		DescriptionTH: faker.Sentence(),
+		NameEN:        faker.Word(),
+		DescriptionEN: faker.Sentence(),
+		Code:          faker.Word(),
+		ImageURL:      "https://storage.googleapis.com/rnkm-public/E-Stamp-04.svg",
+		EventType:     "estamp",
+		Order:         4,
+	},
+	{
+		NameTH:        faker.Word(),
+		DescriptionTH: faker.Sentence(),
+		NameEN:        faker.Word(),
+		DescriptionEN: faker.Sentence(),
+		Code:          faker.Word(),
+		ImageURL:      "https://storage.googleapis.com/rnkm-public/E-Stamp-05.svg",
+		EventType:     "estamp",
+		Order:         5,
+	},
+	{
+		NameTH:        faker.Word(),
+		DescriptionTH: faker.Sentence(),
+		NameEN:        faker.Word(),
+		DescriptionEN: faker.Sentence(),
+		Code:          faker.Word(),
+		ImageURL:      "https://storage.googleapis.com/rnkm-public/E-Stamp-06.svg",
+		EventType:     "estamp",
+		Order:         6,
+	},
+	{
+		NameTH:        faker.Word(),
+		DescriptionTH: faker.Sentence(),
+		NameEN:        faker.Word(),
+		DescriptionEN: faker.Sentence(),
+		Code:          faker.Word(),
+		ImageURL:      "https://storage.googleapis.com/rnkm-public/E-Stamp-07.svg",
+		EventType:     "estamp",
+		Order:         7,
+	},
+	{
+		NameTH:        faker.Word(),
+		DescriptionTH: faker.Sentence(),
+		NameEN:        faker.Word(),
+		DescriptionEN: faker.Sentence(),
+		Code:          faker.Word(),
+		ImageURL:      "https://storage.googleapis.com/rnkm-public/E-Stamp-08.svg",
+		EventType:     "estamp",
+		Order:         8,
+	},
+	{
+		NameTH:        faker.Word(),
+		DescriptionTH: faker.Sentence(),
+		NameEN:        faker.Word(),
+		DescriptionEN: faker.Sentence(),
+		Code:          faker.Word(),
+		ImageURL:      "https://storage.googleapis.com/rnkm-public/E-Stamp-09.svg",
+		EventType:     "estamp",
+		Order:         9,
 	},
 }
