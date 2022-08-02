@@ -13,4 +13,5 @@ type Event struct {
 	Code          string `json:"code"`
 	ImageURL      string `json:"image_url"`
 	EventType     string `json:"event_type"`
+	Order         int    `json:"order"`
 }
