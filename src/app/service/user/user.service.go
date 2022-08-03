@@ -8,6 +8,7 @@ import (
 	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
 	"github.com/isd-sgcu/rnkm65-backend/src/app/utils"
 	"github.com/isd-sgcu/rnkm65-backend/src/proto"
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -26,7 +27,7 @@ type IRepository interface {
 	FindByStudentID(string, *user.User) error
 	Create(*user.User) error
 	Update(string, *user.User) error
-	Verify(string) error
+	Verify(string, string) error
 	Delete(string) error
 	CreateOrUpdate(*user.User) error
 	ConfirmEstamp(string, *user.User, *event.Event) error
@@ -154,21 +155,40 @@ func (s *Service) CreateOrUpdate(_ context.Context, req *proto.CreateOrUpdateUse
 }
 
 func (s *Service) Verify(_ context.Context, req *proto.VerifyUserRequest) (res *proto.VerifyUserResponse, err error) {
-	err = s.repo.Verify(req.StudentId)
-	if err != nil {
+	verify := GetColumnName(req.VerifyType)
+
+	if verify == "" {
 		log.Error().Err(err).
 			Str("service", "user").
 			Str("module", "verify").
 			Str("student_id", req.StudentId).
-			Msgf("Cannot verify (not found)")
-		return nil, status.Error(codes.NotFound, "user not found")
+			Msgf("invalid type")
+		return nil, status.Error(codes.InvalidArgument, "invalid type")
+	}
+
+	err = s.repo.Verify(req.StudentId, verify)
+	if err != nil {
+		if errors.Is(gorm.ErrRecordNotFound, err) {
+			log.Error().Err(err).
+				Str("service", "user").
+				Str("module", "verify").
+				Str("student_id", req.StudentId).
+				Msgf("Cannot verify (not found)")
+			return nil, status.Error(codes.NotFound, "user not found")
+		}
+		log.Error().Err(err).
+			Str("service", "user").
+			Str("module", "verify").
+			Str("student_id", req.StudentId).
+			Msgf("Cannot verify")
+		return nil, status.Error(codes.Internal, "something wrong")
 	}
 
 	log.Info().
 		Str("service", "user").
 		Str("module", "create or update").
 		Str("student_id", req.StudentId).
-		Msg("Successfully create or update the user")
+		Msg("Successfully verify user")
 
 	return &proto.VerifyUserResponse{Success: true}, nil
 }
@@ -321,6 +341,10 @@ func RawToDto(in *user.User, imgUrl string) *proto.User {
 		in.CanSelectBaan = utils.BoolAdr(false)
 	}
 
+	if in.IsGotTicket == nil {
+		in.IsGotTicket = utils.BoolAdr(false)
+	}
+
 	if in.BaanID != nil {
 		baanId = in.BaanID.String()
 	}
@@ -344,6 +368,7 @@ func RawToDto(in *user.User, imgUrl string) *proto.User {
 		ImageUrl:        imgUrl,
 		CanSelectBaan:   *in.CanSelectBaan,
 		IsVerify:        *in.IsVerify,
+		IsGotTicket:     *in.IsGotTicket,
 		BaanId:          baanId,
 	}
 }
@@ -367,4 +392,15 @@ func EventRawToDtoList(in *[]*event.Event) []*proto.Event {
 	}
 
 	return result
+}
+
+func GetColumnName(verifyName string) string {
+	switch verifyName {
+	case "vaccine":
+		return "is_verify"
+	case "ticket":
+		return "is_got_ticket"
+	default:
+		return ""
+	}
 }

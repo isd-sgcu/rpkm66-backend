@@ -69,8 +69,8 @@ func (r *RepositoryMock) Create(in *user.User) error {
 	return args.Error(1)
 }
 
-func (r *RepositoryMock) Verify(studentId string) error {
-	args := r.Called(studentId)
+func (r *RepositoryMock) Verify(studentId string, verifyType string) error {
+	args := r.Called(studentId, verifyType)
 
 	return args.Error(0)
 }

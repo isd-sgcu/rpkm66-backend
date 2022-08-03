@@ -31,8 +31,8 @@ func (r *Repository) CreateOrUpdate(result *user.User) error {
 	return nil
 }
 
-func (r *Repository) Verify(studentId string) error {
-	return r.db.Model(&user.User{}).First(&user.User{}, "student_id = ?", studentId).Update("is_verify", true).Error
+func (r *Repository) Verify(studentId string, columnName string) error {
+	return r.db.Model(&user.User{}).First(&user.User{}, "student_id = ?", studentId).Update(columnName, true).Error
 }
 
 func (r *Repository) Create(in *user.User) error {
