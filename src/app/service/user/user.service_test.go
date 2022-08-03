@@ -421,7 +421,7 @@ func (t *UserServiceTest) TestVerifySuccess() {
 
 	repo := &mock.RepositoryMock{}
 
-	repo.On("Verify", t.User.ID.String(), "vaccine").Return(nil)
+	repo.On("Verify", t.User.ID.String(), "is_verify").Return(nil)
 
 	fileSrv := &fMock.ServiceMock{}
 
@@ -436,7 +436,7 @@ func (t *UserServiceTest) TestVerifySuccess() {
 func (t *UserServiceTest) TestVerifyInvalidArgument() {
 	repo := &mock.RepositoryMock{}
 
-	repo.On("Verify", t.User.ID.String(), "vaccine").Return(gorm.ErrRecordNotFound)
+	repo.On("Verify", t.User.ID.String(), "is_verify").Return(gorm.ErrRecordNotFound)
 
 	fileSrv := &fMock.ServiceMock{}
 
@@ -454,7 +454,7 @@ func (t *UserServiceTest) TestVerifyInvalidArgument() {
 func (t *UserServiceTest) TestVerifyNotFound() {
 	repo := &mock.RepositoryMock{}
 
-	repo.On("Verify", t.User.ID.String(), "vaccine").Return(gorm.ErrRecordNotFound)
+	repo.On("Verify", t.User.ID.String(), "is_verify").Return(gorm.ErrRecordNotFound)
 
 	fileSrv := &fMock.ServiceMock{}
 
