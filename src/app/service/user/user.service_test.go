@@ -62,6 +62,7 @@ func (t *UserServiceTest) SetupTest() {
 		Disease:         faker.Word(),
 		CanSelectBaan:   utils.BoolAdr(true),
 		IsVerify:        utils.BoolAdr(true),
+		IsGotTicket:     utils.BoolAdr(true),
 		GroupID:         utils.UUIDAdr(uuid.New()),
 		BaanID:          utils.UUIDAdr(uuid.New()),
 	}
@@ -160,6 +161,7 @@ func (t *UserServiceTest) SetupTest() {
 		CanSelectBaan:   *t.User.CanSelectBaan,
 		IsVerify:        *t.User.IsVerify,
 		BaanId:          t.User.BaanID.String(),
+		IsGotTicket:     *t.User.IsGotTicket,
 	}
 
 	t.CreateUserReqMock = &proto.CreateUserRequest{
@@ -214,10 +216,6 @@ func (t *UserServiceTest) SetupTest() {
 	}
 }
 
-// for estamp
-
-// ConfirmEstamp
-
 func (t *UserServiceTest) TestConfirmEstampSuccess() {
 	want := &proto.ConfirmEstampResponse{}
 
@@ -266,8 +264,6 @@ func (t *UserServiceTest) TestGetUserEstampSuccess() {
 	assert.Nil(t.T(), err)
 	assert.Equal(t.T(), want, actual)
 }
-
-/// end of estamp
 
 func (t *UserServiceTest) TestFindOneSuccess() {
 	url := faker.URL()
@@ -425,28 +421,46 @@ func (t *UserServiceTest) TestVerifySuccess() {
 
 	repo := &mock.RepositoryMock{}
 
-	repo.On("Verify", t.User.ID.String()).Return(nil)
+	repo.On("Verify", t.User.ID.String(), "is_verify").Return(nil)
 
 	fileSrv := &fMock.ServiceMock{}
 
 	eventSrv := &eMock.RepositoryMock{}
 	srv := NewService(repo, fileSrv, eventSrv)
-	actual, err := srv.Verify(context.Background(), &proto.VerifyUserRequest{StudentId: t.UserDto.Id})
+	actual, err := srv.Verify(context.Background(), &proto.VerifyUserRequest{StudentId: t.UserDto.Id, VerifyType: "vaccine"})
 
 	assert.Nil(t.T(), err)
 	assert.Equal(t.T(), want, actual)
 }
 
-func (t *UserServiceTest) TestVerifyNotFound() {
+func (t *UserServiceTest) TestVerifyInvalidArgument() {
 	repo := &mock.RepositoryMock{}
 
-	repo.On("Verify", t.User.ID.String()).Return(errors.New("Not found user"))
+	repo.On("Verify", t.User.ID.String(), "is_verify").Return(gorm.ErrRecordNotFound)
 
 	fileSrv := &fMock.ServiceMock{}
 
 	eventSrv := &eMock.RepositoryMock{}
 	srv := NewService(repo, fileSrv, eventSrv)
-	actual, err := srv.Verify(context.Background(), &proto.VerifyUserRequest{StudentId: t.UserDto.Id})
+	actual, err := srv.Verify(context.Background(), &proto.VerifyUserRequest{StudentId: t.UserDto.Id, VerifyType: "-"})
+
+	st, ok := status.FromError(err)
+
+	assert.True(t.T(), ok)
+	assert.Nil(t.T(), actual)
+	assert.Equal(t.T(), codes.InvalidArgument, st.Code())
+}
+
+func (t *UserServiceTest) TestVerifyNotFound() {
+	repo := &mock.RepositoryMock{}
+
+	repo.On("Verify", t.User.ID.String(), "is_verify").Return(gorm.ErrRecordNotFound)
+
+	fileSrv := &fMock.ServiceMock{}
+
+	eventSrv := &eMock.RepositoryMock{}
+	srv := NewService(repo, fileSrv, eventSrv)
+	actual, err := srv.Verify(context.Background(), &proto.VerifyUserRequest{StudentId: t.UserDto.Id, VerifyType: "vaccine"})
 
 	st, ok := status.FromError(err)
 
@@ -527,6 +541,7 @@ func (t *UserServiceTest) TestCreateOrUpdateSuccess() {
 	userIn := *t.User
 	userIn.IsVerify = nil
 	userIn.GroupID = nil
+	userIn.IsGotTicket = nil
 	want := &proto.CreateOrUpdateUserResponse{User: t.UserDto}
 
 	repo := &mock.RepositoryMock{}
@@ -566,6 +581,7 @@ func (t *UserServiceTest) TestCreateOrUpdateInternalErr() {
 	userIn := *t.User
 	userIn.IsVerify = nil
 	userIn.GroupID = nil
+	userIn.IsGotTicket = nil
 	repo := &mock.RepositoryMock{}
 
 	repo.On("CreateOrUpdate", &userIn).Return(nil, errors.New("Something wrong"))
