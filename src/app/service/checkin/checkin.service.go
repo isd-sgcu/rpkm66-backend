@@ -61,6 +61,7 @@ func (s *Service) CheckinVerify(_ context.Context, req *proto.CheckinVerifyReque
 			Err(err).
 			Str("service", "checkin").
 			Str("module", "checkinverify").
+			Str("user_id", req.Id).
 			Msg("Unknown db error")
 		return nil, status.Error(codes.Internal, "Internal Server Error")
 	}
@@ -78,28 +79,53 @@ func (s *Service) CheckinVerify(_ context.Context, req *proto.CheckinVerifyReque
 			Err(err).
 			Str("service", "checkin").
 			Str("module", "checkinverify").
+			Str("user_id", req.Id).
 			Msg("UUID broken")
 		return nil, status.Error(codes.Internal, "Internal Server Error")
 	}
 
 	token := _token.String()
 
-	s.cache.SaveCache(token, &checkin.TokenInfo{
+	err = s.cache.SaveCache(token, &checkin.TokenInfo{
 		Id:          req.Id,
 		CheckinType: checkinType,
 		EventType:   req.EventType,
 	}, s.conf.CICacheTTL)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("service", "checkin").
+			Str("module", "checkinverify").
+			Str("user_id", req.Id).
+			Msg("Error while connecting to redis server")
+		return nil, status.Error(codes.Internal, "Internal Server Error")
+	}
 
-	s.cache.SaveCache(utils.GetCacheKey(req.Id, req.EventType), &checkin.CheckinToken{
+	err = s.cache.SaveCache(utils.GetCacheKey(req.Id, req.EventType), &checkin.CheckinToken{
 		Token:       token,
 		UserId:      req.Id,
 		CheckinType: checkinType,
 	}, s.conf.CICacheTTL)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Str("service", "checkin").
+			Str("module", "checkinverify").
+			Str("user_id", req.Id).
+			Msg("Error while connecting to redis server")
+		return nil, status.Error(codes.Internal, "Internal Server Error")
+	}
 
 	res := &proto.CheckinVerifyResponse{
 		CheckinToken: token,
 		CheckinType:  checkinType,
 	}
+
+	log.Info().
+		Str("service", "checkin").
+		Str("module", "checkinverify").
+		Str("user_id", req.Id).
+		Msg("Successfully send verification checkin to user")
 
 	return res, nil
 }
@@ -118,6 +144,7 @@ func (s *Service) CheckinConfirm(_ context.Context, req *proto.CheckinConfirmReq
 			log.Error().Err(err).
 				Str("service", "Checkin").
 				Str("module", "checkin confirm").
+				Str("user_id", cached.Id).
 				Msg("Error while removing user cache")
 		}
 	}()
@@ -127,6 +154,7 @@ func (s *Service) CheckinConfirm(_ context.Context, req *proto.CheckinConfirmReq
 			log.Error().Err(err).
 				Str("service", "Checkin").
 				Str("module", "checkin confirm").
+				Str("user_id", cached.Id).
 				Msg("Error while removing token cache")
 		}
 	}()
@@ -146,10 +174,17 @@ func (s *Service) CheckinConfirm(_ context.Context, req *proto.CheckinConfirmReq
 		log.Error().Err(err).
 			Str("service", "Checkin").
 			Str("module", "checkin confirm").
+			Str("user_id", cached.Id).
 			Msg("Error while Checkin, Possibly due to invalid user-uuid")
 
 		return nil, status.Error(codes.Internal, "Internal Error")
 	}
+
+	log.Info().
+		Str("service", "checkin").
+		Str("module", "checkin confirm").
+		Str("user_id", cached.Id).
+		Msg("Successfully checkin user")
 
 	return &proto.CheckinConfirmResponse{
 		Success: true,
