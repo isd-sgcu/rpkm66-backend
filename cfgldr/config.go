@@ -42,7 +42,7 @@ type Config struct {
 func LoadConfig() (config *Config, err error) {
 	viper.AddConfigPath("./config")
 	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
+	viper.SetConfigType("toml")
 
 	viper.AutomaticEnv()
 

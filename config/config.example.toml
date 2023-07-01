@@ -1,0 +1,22 @@
+[database]
+host = "localhost"
+port = 5432
+name = "rnkm-db"
+username = "root"
+password = "root"
+
+[redis]
+host = ""
+port = 6379
+password = ""
+dbnum = 0
+
+[app]
+port = 3000
+debug = true
+baan_cache_ttl = 900
+number_of_baan = 3
+ci_cache_ttl = 180
+
+[service]
+file = "localhost:3000"

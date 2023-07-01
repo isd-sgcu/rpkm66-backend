@@ -16,7 +16,7 @@
 # vendor/
 
 # config file
-config.yaml
+config.toml
 .env
 .env.prod
 

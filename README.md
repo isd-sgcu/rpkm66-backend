@@ -15,7 +15,7 @@ These instructions will get you a copy of the project up and running on your loc
 ### Installing
 1. Clone the project from [RPKM66 Backend](https://github.com/isd-sgcu/rpkm66-backend)
 2. Import project
-3. Copy `config.example.yaml` in `config` and paste it in the same location then remove `.example` from its name.
+3. Copy `config.example.toml` in `config` and paste it in the same location then remove `.example` from its name.
 4. Download dependencies by `go mod download`
 
 ### Testing
