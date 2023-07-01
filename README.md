@@ -1,4 +1,4 @@
-# RNKM65 Backend
+# RPKM66 Backend
 
 ## Stacks
 - golang
@@ -8,12 +8,12 @@
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
 ### Prerequisites
-- golang 1.18 or [later](https://go.dev)
+- golang 1.20 or [later](https://go.dev)
 - docker
 - makefile
 
 ### Installing
-1. Clone the project from [RNKM65 Backend](https://github.com/isd-sgcu/rnkm65-backend)
+1. Clone the project from [RPKM66 Backend](https://github.com/isd-sgcu/rpkm66-backend)
 2. Import project
 3. Copy `config.example.yaml` in `config` and paste it in the same location then remove `.example` from its name.
 4. Download dependencies by `go mod download`

@@ -1,7 +1,7 @@
 package file
 
 import (
-	"github.com/isd-sgcu/rnkm65-backend/src/proto"
+	"github.com/isd-sgcu/rpkm66-backend/src/proto"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/context"
 	"time"

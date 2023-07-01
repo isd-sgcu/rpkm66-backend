@@ -2,11 +2,11 @@ package group
 
 import (
 	"github.com/google/uuid"
-	"github.com/isd-sgcu/rnkm65-backend/src/app/model"
-	"github.com/isd-sgcu/rnkm65-backend/src/app/model/baan"
-	baan_group_selection "github.com/isd-sgcu/rnkm65-backend/src/app/model/baan-group-selection"
-	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
-	"github.com/isd-sgcu/rnkm65-backend/src/app/utils"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/model"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/model/baan"
+	baan_group_selection "github.com/isd-sgcu/rpkm66-backend/src/app/model/baan-group-selection"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/model/user"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/utils"
 	"gorm.io/gorm"
 )
 

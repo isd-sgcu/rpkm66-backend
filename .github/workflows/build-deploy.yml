@@ -1,19 +1,15 @@
-name: Build and Deploy
+name: Build and deploy
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - master
       - beta
       - dev
 
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository }}
   IMAGE_TAG: ${{ github.sha }}
-  GITOPS_REPO: isd-sgcu/rnkm65-gitOps
-  GITOPS_BASE_PATH: environment
-  GITOPS_SERVICE_NAME: backend
 
 jobs:
   build:
@@ -34,52 +30,57 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      - name: Set branch
-        id: branch
-        run: |
-          echo "::set-output name=BRANCH::${GITHUB_REF#refs/heads/}"
-
       - name: Log in to the Container Registry
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Setup cred
+        shell: bash
+        env:
+          NETRC_CONFIG: ${{ secrets.NETRC_CONFIG }}
+        run: |
+          echo "$NETRC_CONFIG" > /home/runner/.netrc
 
       - name: Build and Push Docker Image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           context: .
           push: true
           tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }},${{ env.IMAGE_NAME }}:latest
           cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache
           cache-to: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache,mode=max
+          secret-files: |
+            "netrcConf=/home/runner/.netrc"
 
   deploy:
-    name: Deploy
+    name: Deploy to deploys.app
     runs-on: ubuntu-latest
+
     needs:
       - build
 
     steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: ${{ env.GITOPS_REPO }}
-          ssh-key: ${{ secrets.GITOPS_SSH_KEY }}
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
 
-      - name: "Setup Kustomize"
-        uses: karancode/kustomize-github-action@master
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
         with:
-          kustomize_build_dir: ${{ env.GITOPS_BASE_PATH }}/${{ needs.build.outputs.BRANCH }}/${{ env.GITOPS_SERVICE_NAME }}
-
-      - name: Set image
-        working-directory: ${{ env.GITOPS_BASE_PATH }}/${{ needs.build.outputs.BRANCH }}/${{ env.GITOPS_SERVICE_NAME }}
-        run: |
-          kustomize edit set image ${{ env.IMAGE_NAME }}=${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-
-      - name: Commit changes
-        uses: EndBug/add-and-commit@v9
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          
+      - uses: deploys-app/deploys-action@v1
         with:
-          author_name: ${{ github.actor }}
-          author_email: ${{ github.actor }}@users.noreply.github.com
-          message: "Set `${{ env.GITOPS_SERVICE_NAME }}` image tag to `${{ env.IMAGE_TAG }}`"
+          project: rpkm66
+          location: gke.cluster-rcf2
+          name: rpkm66-file-${{ steps.extract_branch.outputs.branch }}
+          image: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+        env:
+          DEPLOYS_AUTH_USER: ${{ secrets.DEPLOYS_AUTH_USER }}
+          DEPLOYS_AUTH_PASS: ${{ secrets.DEPLOYS_AUTH_PASS }}

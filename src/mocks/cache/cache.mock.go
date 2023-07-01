@@ -1,9 +1,9 @@
 package cache
 
 import (
-	dto "github.com/isd-sgcu/rnkm65-backend/src/app/model/baan"
-	"github.com/isd-sgcu/rnkm65-backend/src/app/model/checkin"
-	"github.com/isd-sgcu/rnkm65-backend/src/proto"
+	dto "github.com/isd-sgcu/rpkm66-backend/src/app/model/baan"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/model/checkin"
+	"github.com/isd-sgcu/rpkm66-backend/src/proto"
 	"github.com/stretchr/testify/mock"
 )
 

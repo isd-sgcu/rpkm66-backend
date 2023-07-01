@@ -2,7 +2,7 @@ package seed
 
 import (
 	"github.com/bxcodec/faker/v3"
-	"github.com/isd-sgcu/rnkm65-backend/src/app/model/group"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/model/group"
 	"strconv"
 	"time"
 )

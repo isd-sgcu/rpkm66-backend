@@ -2,7 +2,7 @@ package file
 
 import (
 	"context"
-	"github.com/isd-sgcu/rnkm65-backend/src/proto"
+	"github.com/isd-sgcu/rpkm66-backend/src/proto"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"
 )

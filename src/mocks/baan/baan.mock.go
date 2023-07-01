@@ -1,7 +1,7 @@
 package baan
 
 import (
-	"github.com/isd-sgcu/rnkm65-backend/src/app/model/baan"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/model/baan"
 	"github.com/stretchr/testify/mock"
 )
 

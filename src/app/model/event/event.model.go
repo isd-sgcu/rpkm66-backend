@@ -1,7 +1,7 @@
 package event
 
 import (
-	"github.com/isd-sgcu/rnkm65-backend/src/app/model"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/model"
 )
 
 type Event struct {

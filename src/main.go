@@ -4,23 +4,23 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	bRepo "github.com/isd-sgcu/rnkm65-backend/src/app/repository/baan"
-	bgsRepo "github.com/isd-sgcu/rnkm65-backend/src/app/repository/baan-group-selection"
-	"github.com/isd-sgcu/rnkm65-backend/src/app/repository/cache"
-	cir "github.com/isd-sgcu/rnkm65-backend/src/app/repository/checkin"
-	evtRepo "github.com/isd-sgcu/rnkm65-backend/src/app/repository/event"
-	grpRepo "github.com/isd-sgcu/rnkm65-backend/src/app/repository/group"
-	ur "github.com/isd-sgcu/rnkm65-backend/src/app/repository/user"
-	bSrv "github.com/isd-sgcu/rnkm65-backend/src/app/service/baan"
-	csr "github.com/isd-sgcu/rnkm65-backend/src/app/service/checkin"
-	evtService "github.com/isd-sgcu/rnkm65-backend/src/app/service/event"
-	fSrv "github.com/isd-sgcu/rnkm65-backend/src/app/service/file"
-	grpService "github.com/isd-sgcu/rnkm65-backend/src/app/service/group"
-	us "github.com/isd-sgcu/rnkm65-backend/src/app/service/user"
-	"github.com/isd-sgcu/rnkm65-backend/src/config"
-	"github.com/isd-sgcu/rnkm65-backend/src/database"
-	seed "github.com/isd-sgcu/rnkm65-backend/src/database/seeds"
-	"github.com/isd-sgcu/rnkm65-backend/src/proto"
+	bRepo "github.com/isd-sgcu/rpkm66-backend/src/app/repository/baan"
+	bgsRepo "github.com/isd-sgcu/rpkm66-backend/src/app/repository/baan-group-selection"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/repository/cache"
+	cir "github.com/isd-sgcu/rpkm66-backend/src/app/repository/checkin"
+	evtRepo "github.com/isd-sgcu/rpkm66-backend/src/app/repository/event"
+	grpRepo "github.com/isd-sgcu/rpkm66-backend/src/app/repository/group"
+	ur "github.com/isd-sgcu/rpkm66-backend/src/app/repository/user"
+	bSrv "github.com/isd-sgcu/rpkm66-backend/src/app/service/baan"
+	csr "github.com/isd-sgcu/rpkm66-backend/src/app/service/checkin"
+	evtService "github.com/isd-sgcu/rpkm66-backend/src/app/service/event"
+	fSrv "github.com/isd-sgcu/rpkm66-backend/src/app/service/file"
+	grpService "github.com/isd-sgcu/rpkm66-backend/src/app/service/group"
+	us "github.com/isd-sgcu/rpkm66-backend/src/app/service/user"
+	"github.com/isd-sgcu/rpkm66-backend/src/config"
+	"github.com/isd-sgcu/rpkm66-backend/src/database"
+	seed "github.com/isd-sgcu/rpkm66-backend/src/database/seeds"
+	"github.com/isd-sgcu/rpkm66-backend/src/proto"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -188,7 +188,7 @@ func main() {
 	go func() {
 		log.Info().
 			Str("service", "backend").
-			Msgf("RNKM65 backend starting at port %v", conf.App.Port)
+			Msgf("rpkm66 backend starting at port %v", conf.App.Port)
 
 		if err = grpcServer.Serve(lis); err != nil {
 			log.Fatal().

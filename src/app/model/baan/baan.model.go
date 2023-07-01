@@ -1,9 +1,9 @@
 package baan
 
 import (
-	"github.com/isd-sgcu/rnkm65-backend/src/app/model"
-	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
-	"github.com/isd-sgcu/rnkm65-backend/src/constant/baan"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/model"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/model/user"
+	"github.com/isd-sgcu/rpkm66-backend/src/constant/baan"
 )
 
 type Baan struct {

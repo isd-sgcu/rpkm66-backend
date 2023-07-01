@@ -4,21 +4,21 @@ import (
 	"context"
 	"github.com/bxcodec/faker/v3"
 	"github.com/google/uuid"
-	"github.com/isd-sgcu/rnkm65-backend/src/app/model"
-	"github.com/isd-sgcu/rnkm65-backend/src/app/model/baan"
-	baan_group_selection "github.com/isd-sgcu/rnkm65-backend/src/app/model/baan-group-selection"
-	"github.com/isd-sgcu/rnkm65-backend/src/app/model/group"
-	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
-	"github.com/isd-sgcu/rnkm65-backend/src/app/utils"
-	"github.com/isd-sgcu/rnkm65-backend/src/config"
-	size "github.com/isd-sgcu/rnkm65-backend/src/constant/baan"
-	mockBaan "github.com/isd-sgcu/rnkm65-backend/src/mocks/baan"
-	mockBgs "github.com/isd-sgcu/rnkm65-backend/src/mocks/baan-group-selection"
-	mockCache "github.com/isd-sgcu/rnkm65-backend/src/mocks/cache"
-	mockFile "github.com/isd-sgcu/rnkm65-backend/src/mocks/file"
-	mock "github.com/isd-sgcu/rnkm65-backend/src/mocks/group"
-	mockUser "github.com/isd-sgcu/rnkm65-backend/src/mocks/user"
-	"github.com/isd-sgcu/rnkm65-backend/src/proto"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/model"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/model/baan"
+	baan_group_selection "github.com/isd-sgcu/rpkm66-backend/src/app/model/baan-group-selection"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/model/group"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/model/user"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/utils"
+	"github.com/isd-sgcu/rpkm66-backend/src/config"
+	size "github.com/isd-sgcu/rpkm66-backend/src/constant/baan"
+	mockBaan "github.com/isd-sgcu/rpkm66-backend/src/mocks/baan"
+	mockBgs "github.com/isd-sgcu/rpkm66-backend/src/mocks/baan-group-selection"
+	mockCache "github.com/isd-sgcu/rpkm66-backend/src/mocks/cache"
+	mockFile "github.com/isd-sgcu/rpkm66-backend/src/mocks/file"
+	mock "github.com/isd-sgcu/rpkm66-backend/src/mocks/group"
+	mockUser "github.com/isd-sgcu/rpkm66-backend/src/mocks/user"
+	"github.com/isd-sgcu/rpkm66-backend/src/proto"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -532,7 +532,7 @@ func (t *GroupServiceTest) TestUpdateMalformed() {
 	assert.Equal(t.T(), codes.InvalidArgument, st.Code())
 }
 
-//Case1 : a user is a not a king in the group --> expected result : the user is able to join other group, and remove the user from the previous group
+// Case1 : a user is a not a king in the group --> expected result : the user is able to join other group, and remove the user from the previous group
 func (t *GroupServiceTest) TestJoinSuccess1() {
 	afterJoinedUser := &user.User{
 		Base: model.Base{
@@ -614,7 +614,7 @@ func (t *GroupServiceTest) TestJoinSuccess1() {
 	assert.Equal(t.T(), want, actual)
 }
 
-//Case2 : a user is only one in the group --> expected result : the user is able to join other group, and delete the previous group
+// Case2 : a user is only one in the group --> expected result : the user is able to join other group, and delete the previous group
 func (t *GroupServiceTest) TestJoinSuccess2() {
 	headUserDto := &proto.UserInfo{
 		Id:        t.ReservedUser.ID.String(),
@@ -692,7 +692,7 @@ func (t *GroupServiceTest) TestJoinSuccess2() {
 	assert.Equal(t.T(), want, actual)
 }
 
-//Case3 : a member of the group can not join their own group
+// Case3 : a member of the group can not join their own group
 func (t *GroupServiceTest) TestJoinForbidden() {
 	repo := &mock.RepositoryMock{}
 	repo.On("FindGroupByToken", t.Group.Token, &group.Group{}).Return(t.Group, nil)
@@ -742,7 +742,7 @@ func (t *GroupServiceTest) TestJoinNotFound() {
 	assert.Equal(t.T(), codes.NotFound, st.Code())
 }
 
-//Wrong userId
+// Wrong userId
 func (t *GroupServiceTest) TestJoinMalformed() {
 	repo := &mock.RepositoryMock{}
 

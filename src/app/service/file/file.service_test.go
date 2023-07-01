@@ -2,8 +2,8 @@ package file
 
 import (
 	"github.com/bxcodec/faker/v3"
-	mock "github.com/isd-sgcu/rnkm65-backend/src/mocks/file"
-	"github.com/isd-sgcu/rnkm65-backend/src/proto"
+	mock "github.com/isd-sgcu/rpkm66-backend/src/mocks/file"
+	"github.com/isd-sgcu/rpkm66-backend/src/proto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"google.golang.org/grpc/codes"

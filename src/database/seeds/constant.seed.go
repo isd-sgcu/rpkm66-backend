@@ -1,9 +1,9 @@
 package seed
 
 import (
-	"github.com/isd-sgcu/rnkm65-backend/src/app/model/baan"
-	"github.com/isd-sgcu/rnkm65-backend/src/app/model/event"
-	constant "github.com/isd-sgcu/rnkm65-backend/src/constant/baan"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/model/baan"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/model/event"
+	constant "github.com/isd-sgcu/rpkm66-backend/src/constant/baan"
 )
 
 var baans = []baan.Baan{

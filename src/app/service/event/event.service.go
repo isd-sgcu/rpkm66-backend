@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/isd-sgcu/rnkm65-backend/src/app/model"
-	"github.com/isd-sgcu/rnkm65-backend/src/app/model/event"
-	"github.com/isd-sgcu/rnkm65-backend/src/proto"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/model"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/model/event"
+	"github.com/isd-sgcu/rpkm66-backend/src/proto"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

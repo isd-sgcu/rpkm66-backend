@@ -6,16 +6,16 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
-	"github.com/isd-sgcu/rnkm65-backend/src/app/model/checkin"
-	"github.com/isd-sgcu/rnkm65-backend/src/app/utils"
-	"github.com/isd-sgcu/rnkm65-backend/src/config"
-	"github.com/isd-sgcu/rnkm65-backend/src/proto"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/model/checkin"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/utils"
+	"github.com/isd-sgcu/rpkm66-backend/src/config"
+	"github.com/isd-sgcu/rpkm66-backend/src/proto"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 
-	cst "github.com/isd-sgcu/rnkm65-backend/src/constant/checkin"
+	cst "github.com/isd-sgcu/rpkm66-backend/src/constant/checkin"
 )
 
 type IRepository interface {

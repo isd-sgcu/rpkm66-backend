@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/isd-sgcu/rnkm65-backend/src/app/model/user"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/model/user"
 
 	"github.com/bxcodec/faker/v3"
 )
