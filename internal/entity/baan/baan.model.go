@@ -9,9 +9,9 @@ import (
 type Baan struct {
 	entity.Base
 	NameTH        string        `json:"name_th" gorm:"type:text"`
-	DescriptionTH string        `json:"description_th" gorm:"type:mediumtext"`
+	DescriptionTH string        `json:"description_th" gorm:"type:text"`
 	NameEN        string        `json:"name_en" gorm:"type:text"`
-	DescriptionEN string        `json:"description_en" gorm:"type:mediumtext"`
+	DescriptionEN string        `json:"description_en" gorm:"type:text"`
 	ImageUrl      string        `json:"image_url" gorm:"type:text"`
 	Size          baan.BaanSize `json:"size" gorm:"type:tinyint"`
 	Facebook      string        `json:"facebook" gorm:"type:text"`
