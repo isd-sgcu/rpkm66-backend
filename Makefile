@@ -22,4 +22,4 @@ compose-down:
 	docker-compose down
 
 seed:
-	go run ./src/. seed
+	go run ./src/cmd/. seed

@@ -14,7 +14,7 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN go build -o server ./src/.
+RUN go build -o server ./src/cmd/
 
 # Create master image
 FROM alpine AS master
