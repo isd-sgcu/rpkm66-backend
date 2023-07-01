@@ -1,6 +1,6 @@
 database:
   host: localhost
-  port: 3306
+  port: 5432
   name: rnkm-db
   username: root
   password: root

@@ -11,7 +11,7 @@ services:
     volumes:
       - ./volumes/mysql:/var/lib/mysql
     ports:
-      - "3306:3306"
+      - "5432:5432"
 
   local-cache:
     image: bitnami/redis:6.2.6

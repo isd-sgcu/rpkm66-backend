@@ -2,6 +2,8 @@ package database
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/isd-sgcu/rpkm66-backend/src/app/model/baan"
 	baan_group "github.com/isd-sgcu/rpkm66-backend/src/app/model/baan-group-selection"
 	"github.com/isd-sgcu/rpkm66-backend/src/app/model/checkin"
@@ -9,18 +11,16 @@ import (
 	"github.com/isd-sgcu/rpkm66-backend/src/app/model/group"
 	"github.com/isd-sgcu/rpkm66-backend/src/app/model/user"
 	"github.com/isd-sgcu/rpkm66-backend/src/config"
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"strconv"
 )
 
 func InitDatabase(conf *config.Database) (db *gorm.DB, err error) {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True", conf.User, conf.Password, conf.Host, strconv.Itoa(conf.Port), conf.Name)
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s", conf.Host, conf.User, conf.Password, conf.Name, strconv.Itoa(conf.Port))
 
-	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil {
-		return nil, err
-	}
+	db, err = gorm.Open(postgres.New(postgres.Config{
+		DSN: dsn,
+	}), &gorm.Config{})
 
 	err = db.SetupJoinTable(&group.Group{}, "Baans", &baan_group.BaanGroupSelection{})
 
