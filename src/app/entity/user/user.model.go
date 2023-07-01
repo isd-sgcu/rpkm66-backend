@@ -2,14 +2,14 @@ package user
 
 import (
 	"github.com/google/uuid"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/checkin"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/event"
+	entity "github.com/isd-sgcu/rpkm66-backend/src/app/entity"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/checkin"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/event"
 	"gorm.io/gorm"
 )
 
 type User struct {
-	model.Base
+	entity.Base
 	Checkin         []*checkin.Checkin
 	Title           string         `json:"title" gorm:"type:VARCHAR(10)"`
 	Firstname       string         `json:"firstname" gorm:"type:tinytext"`

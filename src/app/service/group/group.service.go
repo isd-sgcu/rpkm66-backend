@@ -2,13 +2,15 @@ package group
 
 import (
 	"context"
+	"time"
+
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model"
-	baanModel "github.com/isd-sgcu/rpkm66-backend/src/app/model/baan"
-	baan_group_selection "github.com/isd-sgcu/rpkm66-backend/src/app/model/baan-group-selection"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/group"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/user"
+	entity "github.com/isd-sgcu/rpkm66-backend/src/app/entity"
+	baan_entity "github.com/isd-sgcu/rpkm66-backend/src/app/entity/baan"
+	baan_group_selection "github.com/isd-sgcu/rpkm66-backend/src/app/entity/baan-group-selection"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/group"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/user"
 	"github.com/isd-sgcu/rpkm66-backend/src/app/service/baan"
 	"github.com/isd-sgcu/rpkm66-backend/src/app/utils"
 	"github.com/isd-sgcu/rpkm66-backend/src/config"
@@ -17,7 +19,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
-	"time"
 )
 
 type Service struct {
@@ -51,7 +52,7 @@ type IBaanGroupSelectRepository interface {
 }
 
 type IBaanRepository interface {
-	FindMulti([]string, *[]*baanModel.Baan) error
+	FindMulti([]string, *[]*baan_entity.Baan) error
 }
 
 type IUserRepository interface {
@@ -619,7 +620,7 @@ func (s *Service) SelectBaan(_ context.Context, req *proto.SelectBaanRequest) (r
 		baanSelections = append(baanSelections, &baanSelect)
 	}
 
-	err = s.repo.RemoveAllBaan(&group.Group{Base: model.Base{ID: grp.ID}})
+	err = s.repo.RemoveAllBaan(&group.Group{Base: entity.Base{ID: grp.ID}})
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -683,7 +684,7 @@ func DtoToRaw(in *proto.Group) (result *group.Group, err error) {
 		}
 
 		newUser := &user.User{
-			Base: model.Base{
+			Base: entity.Base{
 				ID:        id,
 				CreatedAt: time.Time{},
 				UpdatedAt: time.Time{},
@@ -703,7 +704,7 @@ func DtoToRaw(in *proto.Group) (result *group.Group, err error) {
 		}
 	}
 	return &group.Group{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        id,
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},

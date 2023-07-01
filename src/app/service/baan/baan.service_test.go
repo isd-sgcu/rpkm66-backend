@@ -2,11 +2,14 @@ package baan
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/bxcodec/faker/v3"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/baan"
+	entity "github.com/isd-sgcu/rpkm66-backend/src/app/entity"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/baan"
 	"github.com/isd-sgcu/rpkm66-backend/src/config"
 	constant "github.com/isd-sgcu/rpkm66-backend/src/constant/baan"
 	size "github.com/isd-sgcu/rpkm66-backend/src/constant/baan"
@@ -19,8 +22,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
-	"testing"
-	"time"
 )
 
 type BaanServiceTest struct {
@@ -39,7 +40,7 @@ func (t *BaanServiceTest) SetupTest() {
 	t.baans = make([]*baan.Baan, 0)
 
 	t.baan = &baan.Baan{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        uuid.New(),
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},
@@ -61,7 +62,7 @@ func (t *BaanServiceTest) SetupTest() {
 	}
 
 	baan2 := &baan.Baan{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        uuid.New(),
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},
@@ -82,7 +83,7 @@ func (t *BaanServiceTest) SetupTest() {
 	}
 
 	baan3 := &baan.Baan{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        uuid.New(),
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},

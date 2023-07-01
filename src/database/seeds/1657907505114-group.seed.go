@@ -1,10 +1,11 @@
 package seed
 
 import (
-	"github.com/bxcodec/faker/v3"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/group"
 	"strconv"
 	"time"
+
+	"github.com/bxcodec/faker/v3"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/group"
 )
 
 func (s Seed) GroupSeed1657907505114() error {

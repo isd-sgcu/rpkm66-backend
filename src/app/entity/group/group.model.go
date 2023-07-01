@@ -2,16 +2,16 @@ package group
 
 import (
 	"github.com/google/uuid"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/baan"
-	baan_group_selection "github.com/isd-sgcu/rpkm66-backend/src/app/model/baan-group-selection"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/user"
+	entity "github.com/isd-sgcu/rpkm66-backend/src/app/entity"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/baan"
+	baan_group_selection "github.com/isd-sgcu/rpkm66-backend/src/app/entity/baan-group-selection"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/user"
 	"github.com/isd-sgcu/rpkm66-backend/src/app/utils"
 	"gorm.io/gorm"
 )
 
 type Group struct {
-	model.Base
+	entity.Base
 	LeaderID           string       `json:"leader_id"`
 	Token              string       `json:"token" gorm:"index:, unique"`
 	Members            []*user.User `json:"members"`

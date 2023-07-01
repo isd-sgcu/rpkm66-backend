@@ -3,15 +3,16 @@ package event
 import (
 	"context"
 	"errors"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"testing"
 	"time"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/bxcodec/faker/v3"
 	"github.com/google/uuid"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/event"
+	entity "github.com/isd-sgcu/rpkm66-backend/src/app/entity"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/event"
 	mock "github.com/isd-sgcu/rpkm66-backend/src/mocks/event"
 	"github.com/isd-sgcu/rpkm66-backend/src/proto"
 	"github.com/stretchr/testify/assert"
@@ -33,7 +34,7 @@ func TestEventService(t *testing.T) {
 
 func (t *EventServiceTest) SetupTest() {
 	t.Event = &event.Event{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        uuid.New(),
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},
@@ -106,7 +107,7 @@ func (t *EventServiceTest) createEvent() []*event.Event {
 
 	for i := 0; i <= 5; i++ {
 		r := &event.Event{
-			Base: model.Base{
+			Base: entity.Base{
 				ID: uuid.New(),
 			},
 			NameTH:        faker.Word(),

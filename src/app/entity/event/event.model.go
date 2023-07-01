@@ -1,11 +1,11 @@
 package event
 
 import (
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model"
+	entity "github.com/isd-sgcu/rpkm66-backend/src/app/entity"
 )
 
 type Event struct {
-	model.Base
+	entity.Base
 	NameTH        string `json:"name_th"`
 	DescriptionTH string `json:"description_th"`
 	NameEN        string `json:"name_en"`

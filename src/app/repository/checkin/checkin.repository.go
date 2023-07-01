@@ -1,7 +1,7 @@
 package checkin
 
 import (
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/checkin"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/checkin"
 	"gorm.io/gorm"
 )
 

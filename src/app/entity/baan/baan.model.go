@@ -1,13 +1,13 @@
 package baan
 
 import (
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/user"
+	entity "github.com/isd-sgcu/rpkm66-backend/src/app/entity"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/user"
 	"github.com/isd-sgcu/rpkm66-backend/src/constant/baan"
 )
 
 type Baan struct {
-	model.Base
+	entity.Base
 	NameTH        string        `json:"name_th" gorm:"type:tinytext"`
 	DescriptionTH string        `json:"description_th" gorm:"type:mediumtext"`
 	NameEN        string        `json:"name_en" gorm:"type:tinytext"`

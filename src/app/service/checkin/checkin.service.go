@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/checkin"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/checkin"
 	"github.com/isd-sgcu/rpkm66-backend/src/app/utils"
 	"github.com/isd-sgcu/rpkm66-backend/src/config"
 	"github.com/isd-sgcu/rpkm66-backend/src/proto"

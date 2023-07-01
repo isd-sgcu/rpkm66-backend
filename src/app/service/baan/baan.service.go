@@ -2,9 +2,10 @@ package baan
 
 import (
 	"context"
+
 	"github.com/go-redis/redis/v8"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/baan"
-	baan_group_selection "github.com/isd-sgcu/rpkm66-backend/src/app/model/baan-group-selection"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/baan"
+	baan_group_selection "github.com/isd-sgcu/rpkm66-backend/src/app/entity/baan-group-selection"
 	"github.com/isd-sgcu/rpkm66-backend/src/config"
 	constant "github.com/isd-sgcu/rpkm66-backend/src/constant/baan"
 	"github.com/isd-sgcu/rpkm66-backend/src/proto"

@@ -7,9 +7,9 @@ import (
 
 	"github.com/bxcodec/faker/v3"
 	"github.com/google/uuid"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/event"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/user"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/event"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/user"
 	"github.com/isd-sgcu/rpkm66-backend/src/app/utils"
 	eMock "github.com/isd-sgcu/rpkm66-backend/src/mocks/event"
 	fMock "github.com/isd-sgcu/rpkm66-backend/src/mocks/file"
@@ -40,7 +40,7 @@ func TestUserService(t *testing.T) {
 
 func (t *UserServiceTest) SetupTest() {
 	t.User = &user.User{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        uuid.New(),
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},
@@ -68,7 +68,7 @@ func (t *UserServiceTest) SetupTest() {
 	}
 
 	t.Event = &event.Event{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        uuid.New(),
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},
@@ -93,7 +93,7 @@ func (t *UserServiceTest) SetupTest() {
 	}
 
 	t.Event = &event.Event{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        uuid.New(),
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},
@@ -118,7 +118,7 @@ func (t *UserServiceTest) SetupTest() {
 	}
 
 	t.Event = &event.Event{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        uuid.New(),
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},
@@ -225,7 +225,7 @@ func (t *UserServiceTest) TestConfirmEstampSuccess() {
 
 	eventSrv.On("FindEventByID", t.Event.ID.String(), &event.Event{}).Return(t.Event, nil)
 	repo.On("ConfirmEstamp", t.User.ID.String(), &user.User{
-		Base: model.Base{
+		Base: entity.Base{
 			ID: t.User.ID,
 		},
 	}, t.Event).Return(nil, nil)
@@ -248,7 +248,7 @@ func (t *UserServiceTest) TestGetUserEstampSuccess() {
 
 	r := mock.RepositoryMock{}
 	r.On("GetUserEstamp", t.User.ID.String(), &user.User{
-		Base: model.Base{
+		Base: entity.Base{
 			ID: t.User.ID,
 		},
 	}, &eventsIn).Return(eventList, nil)
@@ -657,7 +657,7 @@ func (t *UserServiceTest) createEvent() []*event.Event {
 
 	for i := 0; i <= 5; i++ {
 		r := &event.Event{
-			Base: model.Base{
+			Base: entity.Base{
 				ID: uuid.New(),
 			},
 			NameTH:        faker.Word(),

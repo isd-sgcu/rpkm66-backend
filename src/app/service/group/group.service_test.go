@@ -2,13 +2,16 @@ package group
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/bxcodec/faker/v3"
 	"github.com/google/uuid"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/baan"
-	baan_group_selection "github.com/isd-sgcu/rpkm66-backend/src/app/model/baan-group-selection"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/group"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/user"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/baan"
+	baan_group_selection "github.com/isd-sgcu/rpkm66-backend/src/app/entity/baan-group-selection"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/group"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/user"
 	"github.com/isd-sgcu/rpkm66-backend/src/app/utils"
 	"github.com/isd-sgcu/rpkm66-backend/src/config"
 	size "github.com/isd-sgcu/rpkm66-backend/src/constant/baan"
@@ -25,8 +28,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
-	"testing"
-	"time"
 )
 
 type GroupServiceTest struct {
@@ -49,7 +50,7 @@ func TestGroupService(t *testing.T) {
 
 func (t *GroupServiceTest) SetupTest() {
 	t.UserMock = &user.User{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        uuid.New(),
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},
@@ -80,7 +81,7 @@ func (t *GroupServiceTest) SetupTest() {
 		ImageUrl:  "",
 	}
 	t.Group = &group.Group{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        *t.UserMock.GroupID,
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},
@@ -92,7 +93,7 @@ func (t *GroupServiceTest) SetupTest() {
 	}
 
 	t.Member = &user.User{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        t.UserMock.ID,
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},
@@ -120,7 +121,7 @@ func (t *GroupServiceTest) SetupTest() {
 	}
 
 	t.ReservedUser = &user.User{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        uuid.New(),
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},
@@ -146,7 +147,7 @@ func (t *GroupServiceTest) SetupTest() {
 	}
 
 	t.RemovedUser = &user.User{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        uuid.New(),
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},
@@ -172,7 +173,7 @@ func (t *GroupServiceTest) SetupTest() {
 	}
 
 	t.PreviousGroup = &group.Group{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        t.Group.ID,
 			CreatedAt: t.Group.CreatedAt,
 			UpdatedAt: t.Group.UpdatedAt,
@@ -196,7 +197,7 @@ func createBaan() []*baan.Baan {
 
 	for i := 0; i < 3; i++ {
 		b := baan.Baan{
-			Base:          model.Base{ID: uuid.New()},
+			Base:          entity.Base{ID: uuid.New()},
 			NameTH:        faker.Word(),
 			DescriptionTH: faker.Word(),
 			NameEN:        faker.Word(),
@@ -329,7 +330,7 @@ func (t *GroupServiceTest) TestFindOneWithCreateGroup() {
 	repo.On("Create", in).Return(t.Group, nil)
 	repo.On("FindGroupByToken", t.Group.Token, &group.Group{}).Return(t.Group, nil)
 	nonGroupUser := &user.User{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        t.UserMock.ID,
 			CreatedAt: t.UserMock.CreatedAt,
 			UpdatedAt: t.UserMock.UpdatedAt,
@@ -436,7 +437,7 @@ func (t *GroupServiceTest) TestUpdateSuccess() {
 	want := &proto.UpdateGroupResponse{Group: t.GroupDto}
 
 	nonUser := &user.User{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        t.UserMock.ID,
 			CreatedAt: t.UserMock.CreatedAt,
 			UpdatedAt: t.UserMock.UpdatedAt,
@@ -447,7 +448,7 @@ func (t *GroupServiceTest) TestUpdateSuccess() {
 	}
 
 	raw := &group.Group{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        t.Group.ID,
 			CreatedAt: t.Group.CreatedAt,
 			UpdatedAt: t.Group.UpdatedAt,
@@ -535,7 +536,7 @@ func (t *GroupServiceTest) TestUpdateMalformed() {
 // Case1 : a user is a not a king in the group --> expected result : the user is able to join other group, and remove the user from the previous group
 func (t *GroupServiceTest) TestJoinSuccess1() {
 	afterJoinedUser := &user.User{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        t.ReservedUser.ID,
 			CreatedAt: t.ReservedUser.CreatedAt,
 			UpdatedAt: t.ReservedUser.UpdatedAt,
@@ -561,7 +562,7 @@ func (t *GroupServiceTest) TestJoinSuccess1() {
 	}
 
 	prevGrp := &group.Group{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        *t.ReservedUser.GroupID,
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},
@@ -573,7 +574,7 @@ func (t *GroupServiceTest) TestJoinSuccess1() {
 	}
 
 	joinGrp := &group.Group{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        t.Group.ID,
 			CreatedAt: t.Group.CreatedAt,
 			UpdatedAt: t.Group.UpdatedAt,
@@ -624,7 +625,7 @@ func (t *GroupServiceTest) TestJoinSuccess2() {
 	}
 
 	joinUser := &user.User{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        t.UserMock.ID,
 			CreatedAt: t.UserMock.CreatedAt,
 			UpdatedAt: t.UserMock.UpdatedAt,
@@ -650,7 +651,7 @@ func (t *GroupServiceTest) TestJoinSuccess2() {
 	}
 
 	joinGroup := &group.Group{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        *t.ReservedUser.GroupID,
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},
@@ -768,7 +769,7 @@ func (t *GroupServiceTest) TestJoinMalformed() {
 
 func (t *GroupServiceTest) TestJoinFullGroup() {
 	member1User := &user.User{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        uuid.New(),
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},
@@ -793,7 +794,7 @@ func (t *GroupServiceTest) TestJoinFullGroup() {
 		GroupID:         t.ReservedUser.GroupID,
 	}
 	member2User := &user.User{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        uuid.New(),
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},
@@ -819,7 +820,7 @@ func (t *GroupServiceTest) TestJoinFullGroup() {
 	}
 
 	fullGroup := &group.Group{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        *t.ReservedUser.GroupID,
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},
@@ -856,7 +857,7 @@ func (t *GroupServiceTest) TestDeleteMemberSuccess() {
 		LeaderID: t.RemovedUser.ID.String(),
 	}
 	createdUser := &user.User{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        t.RemovedUser.ID,
 			CreatedAt: t.RemovedUser.CreatedAt,
 			UpdatedAt: t.RemovedUser.UpdatedAt,
@@ -991,7 +992,7 @@ func (t *GroupServiceTest) TestLeaveGroupSuccess() {
 	repo.On("Create", in).Return(in, nil)
 
 	updatedUser := &user.User{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        t.RemovedUser.ID,
 			CreatedAt: t.RemovedUser.CreatedAt,
 			UpdatedAt: t.RemovedUser.UpdatedAt,
@@ -1023,7 +1024,7 @@ func (t *GroupServiceTest) TestLeaveGroupSuccess() {
 	}
 
 	newGroup := &group.Group{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        in.ID,
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},
@@ -1215,7 +1216,7 @@ func (t *GroupServiceTest) TestUpdateBaanSelectionSuccess() {
 
 	repo := &mock.RepositoryMock{}
 	repo.On("FindGroupWithBaans", t.GroupDto.Id, &group.Group{}).Return(t.Group, nil)
-	repo.On("RemoveAllBaan", &group.Group{Base: model.Base{ID: t.Group.ID}}).Return(nil)
+	repo.On("RemoveAllBaan", &group.Group{Base: entity.Base{ID: t.Group.ID}}).Return(nil)
 
 	userRepo := &mockUser.RepositoryMock{}
 	userRepo.On("FindOne", t.UserMock.ID.String(), &user.User{}).Return(t.UserMock, nil)

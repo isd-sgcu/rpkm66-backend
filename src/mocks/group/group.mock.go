@@ -1,7 +1,7 @@
 package group
 
 import (
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/group"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/group"
 	"github.com/stretchr/testify/mock"
 )
 

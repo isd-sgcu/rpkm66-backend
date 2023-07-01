@@ -1,8 +1,8 @@
 package user
 
 import (
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/event"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/user"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/event"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/user"
 	"github.com/stretchr/testify/mock"
 )
 

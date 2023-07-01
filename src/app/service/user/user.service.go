@@ -2,10 +2,12 @@ package user
 
 import (
 	"context"
+	"time"
+
 	"github.com/google/uuid"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/event"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/user"
+	entity "github.com/isd-sgcu/rpkm66-backend/src/app/entity"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/event"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/user"
 	eventSrv "github.com/isd-sgcu/rpkm66-backend/src/app/service/event"
 	"github.com/isd-sgcu/rpkm66-backend/src/app/utils"
 	"github.com/isd-sgcu/rpkm66-backend/src/proto"
@@ -14,7 +16,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
-	"time"
 )
 
 type Service struct {
@@ -246,7 +247,7 @@ func (s *Service) ConfirmEstamp(_ context.Context, req *proto.ConfirmEstampReque
 	}
 
 	user := user.User{
-		Base: model.Base{
+		Base: entity.Base{
 			ID: uid,
 		},
 	}
@@ -321,7 +322,7 @@ func (s *Service) GetUserEstamp(_ context.Context, req *proto.GetUserEstampReque
 	}
 
 	user := user.User{
-		Base: model.Base{
+		Base: entity.Base{
 			ID: uid,
 		},
 	}
@@ -388,7 +389,7 @@ func DtoToRaw(in *proto.User) (result *user.User, err error) {
 	}
 
 	return &user.User{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        id,
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},

@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/event"
+	entity "github.com/isd-sgcu/rpkm66-backend/src/app/entity"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/event"
 	"github.com/isd-sgcu/rpkm66-backend/src/proto"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
@@ -114,7 +114,7 @@ func DtoToRaw(in *proto.Event) (result *event.Event, err error) {
 	}
 
 	return &event.Event{
-		Base: model.Base{
+		Base: entity.Base{
 			ID:        id,
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},

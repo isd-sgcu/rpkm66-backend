@@ -1,8 +1,8 @@
 package seed
 
 import (
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/baan"
-	"github.com/isd-sgcu/rpkm66-backend/src/app/model/event"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/baan"
+	"github.com/isd-sgcu/rpkm66-backend/src/app/entity/event"
 	constant "github.com/isd-sgcu/rpkm66-backend/src/constant/baan"
 )
 

@@ -1,7 +1,7 @@
 package baan_group_selection
 
 import (
-	baan_group_selection "github.com/isd-sgcu/rpkm66-backend/src/app/model/baan-group-selection"
+	baan_group_selection "github.com/isd-sgcu/rpkm66-backend/src/app/entity/baan-group-selection"
 	"github.com/stretchr/testify/mock"
 )
 
