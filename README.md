@@ -23,7 +23,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Running
 1. Run `docker-compose up -d` or `make compose-up`
-2. Run `go run ./src/.` or `make server`
+2. Run `go run ./.` or `make server`
 
 ### Compile proto file
 1. Run `make proto`
@@ -34,6 +34,6 @@ These instructions will get you a copy of the project up and running on your loc
    - ex `UserSeed1652002196085` `RoleSeed1651703066048`
 
 ### Seeding
-- Run `go run ./src/. seed` or `make seed` (Seed all files)
-- Run `go run ./src/. seed <name>` (Seed specific file)
+- Run `go run ./. seed` or `make seed` (Seed all files)
+- Run `go run ./. seed <name>` (Seed specific file)
 
