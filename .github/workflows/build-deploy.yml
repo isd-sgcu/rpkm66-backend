@@ -79,7 +79,7 @@ jobs:
         with:
           project: rpkm66
           location: gke.cluster-rcf2
-          name: rpkm66-file-${{ steps.extract_branch.outputs.branch }}
+          name: rpkm66-backend-${{ steps.extract_branch.outputs.branch }}
           image: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
         env:
           DEPLOYS_AUTH_USER: ${{ secrets.DEPLOYS_AUTH_USER }}
