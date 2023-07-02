@@ -3,7 +3,7 @@ package file
 import (
 	"context"
 
-	"github.com/isd-sgcu/rpkm66-backend/proto"
+	proto "github.com/isd-sgcu/rpkm66-go-proto/rpkm66/file/file/v1"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"
 )
@@ -20,6 +20,11 @@ func (c *ClientMock) GetSignedUrl(_ context.Context, in *proto.GetSignedUrlReque
 	}
 
 	return res, args.Error(1)
+}
+
+// Unused
+func (s *ClientMock) Upload(ctx context.Context, in *proto.UploadRequest, opts ...grpc.CallOption) (*proto.UploadResponse, error) {
+	return nil, nil
 }
 
 type ServiceMock struct {

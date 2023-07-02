@@ -3,11 +3,11 @@ package user
 import (
 	"context"
 
+	proto "github.com/isd-sgcu/rpkm66-backend/internal/proto/rpkm66/backend/user/v1"
 	user_svc "github.com/isd-sgcu/rpkm66-backend/internal/service/user"
 	event_repo "github.com/isd-sgcu/rpkm66-backend/pkg/repository/event"
 	user_repo "github.com/isd-sgcu/rpkm66-backend/pkg/repository/user"
 	file_svc "github.com/isd-sgcu/rpkm66-backend/pkg/service/file"
-	"github.com/isd-sgcu/rpkm66-backend/proto"
 )
 
 type Service interface {

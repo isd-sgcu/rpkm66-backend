@@ -3,7 +3,7 @@ package cache
 import (
 	dto "github.com/isd-sgcu/rpkm66-backend/internal/entity/baan"
 	"github.com/isd-sgcu/rpkm66-backend/internal/entity/checkin"
-	"github.com/isd-sgcu/rpkm66-backend/proto"
+	proto "github.com/isd-sgcu/rpkm66-backend/internal/proto/rpkm66/backend/baan/v1"
 	"github.com/stretchr/testify/mock"
 )
 

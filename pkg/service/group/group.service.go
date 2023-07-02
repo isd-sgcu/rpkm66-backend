@@ -6,6 +6,7 @@ import (
 	"github.com/isd-sgcu/rpkm66-backend/cfgldr"
 	"github.com/isd-sgcu/rpkm66-backend/internal/entity/group"
 	"github.com/isd-sgcu/rpkm66-backend/internal/entity/user"
+	proto "github.com/isd-sgcu/rpkm66-backend/internal/proto/rpkm66/backend/group/v1"
 	group_svc "github.com/isd-sgcu/rpkm66-backend/internal/service/group"
 	baan_repo "github.com/isd-sgcu/rpkm66-backend/pkg/repository/baan"
 	baan_group_selection_repo "github.com/isd-sgcu/rpkm66-backend/pkg/repository/baan-group-selection"
@@ -13,7 +14,6 @@ import (
 	group_repo "github.com/isd-sgcu/rpkm66-backend/pkg/repository/group"
 	user_repo "github.com/isd-sgcu/rpkm66-backend/pkg/repository/user"
 	file_svc "github.com/isd-sgcu/rpkm66-backend/pkg/service/file"
-	"github.com/isd-sgcu/rpkm66-backend/proto"
 )
 
 type Service interface {

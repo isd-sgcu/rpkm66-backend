@@ -3,7 +3,7 @@ package file
 import (
 	"time"
 
-	"github.com/isd-sgcu/rpkm66-backend/proto"
+	proto "github.com/isd-sgcu/rpkm66-go-proto/rpkm66/file/file/v1"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/context"
 )

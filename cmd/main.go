@@ -14,6 +14,11 @@ import (
 	"github.com/isd-sgcu/rpkm66-backend/cfgldr"
 	"github.com/isd-sgcu/rpkm66-backend/database"
 	seed "github.com/isd-sgcu/rpkm66-backend/database/seeds"
+	baan_proto "github.com/isd-sgcu/rpkm66-backend/internal/proto/rpkm66/backend/baan/v1"
+	checkin_proto "github.com/isd-sgcu/rpkm66-backend/internal/proto/rpkm66/backend/checkin/v1"
+	event_proto "github.com/isd-sgcu/rpkm66-backend/internal/proto/rpkm66/backend/event/v1"
+	group_proto "github.com/isd-sgcu/rpkm66-backend/internal/proto/rpkm66/backend/group/v1"
+	user_proto "github.com/isd-sgcu/rpkm66-backend/internal/proto/rpkm66/backend/user/v1"
 	bRepo "github.com/isd-sgcu/rpkm66-backend/internal/repository/baan"
 	bgsRepo "github.com/isd-sgcu/rpkm66-backend/internal/repository/baan-group-selection"
 	"github.com/isd-sgcu/rpkm66-backend/internal/repository/cache"
@@ -27,7 +32,7 @@ import (
 	fSrv "github.com/isd-sgcu/rpkm66-backend/internal/service/file"
 	grpService "github.com/isd-sgcu/rpkm66-backend/internal/service/group"
 	us "github.com/isd-sgcu/rpkm66-backend/internal/service/user"
-	"github.com/isd-sgcu/rpkm66-backend/proto"
+	file_proto "github.com/isd-sgcu/rpkm66-go-proto/rpkm66/file/file/v1"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -158,7 +163,7 @@ func main() {
 
 	cacheRepo := cache.NewRepository(cacheDB)
 
-	fileClient := proto.NewFileServiceClient(fileConn)
+	fileClient := file_proto.NewFileServiceClient(fileConn)
 	fileSrv := fSrv.NewService(fileClient)
 
 	eventRepo := evtRepo.NewRepository(db)
@@ -179,12 +184,12 @@ func main() {
 	grpSvc := grpService.NewService(groupRepo, usrRepo, baGrpSetRepo, fileSrv, cacheRepo, baRepo, conf.App)
 
 	grpc_health_v1.RegisterHealthServer(grpcServer, health.NewServer())
-	proto.RegisterUserServiceServer(grpcServer, usrSvc)
-	proto.RegisterCheckinServiceServer(grpcServer, ciSvc)
-	proto.RegisterBaanServiceServer(grpcServer, baSrv)
-	proto.RegisterGroupServiceServer(grpcServer, grpSvc)
+	user_proto.RegisterUserServiceServer(grpcServer, usrSvc)
+	checkin_proto.RegisterCheckinServiceServer(grpcServer, ciSvc)
+	baan_proto.RegisterBaanServiceServer(grpcServer, baSrv)
+	group_proto.RegisterGroupServiceServer(grpcServer, grpSvc)
+	event_proto.RegisterEventServiceServer(grpcServer, evtSvc)
 
-	proto.RegisterEventServiceServer(grpcServer, evtSvc)
 	reflection.Register(grpcServer)
 	go func() {
 		log.Info().

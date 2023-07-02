@@ -11,6 +11,8 @@ import (
 	baan_group_selection "github.com/isd-sgcu/rpkm66-backend/internal/entity/baan-group-selection"
 	"github.com/isd-sgcu/rpkm66-backend/internal/entity/group"
 	"github.com/isd-sgcu/rpkm66-backend/internal/entity/user"
+	baan_proto "github.com/isd-sgcu/rpkm66-backend/internal/proto/rpkm66/backend/baan/v1"
+	proto "github.com/isd-sgcu/rpkm66-backend/internal/proto/rpkm66/backend/group/v1"
 	"github.com/isd-sgcu/rpkm66-backend/internal/service/baan"
 	"github.com/isd-sgcu/rpkm66-backend/internal/utils"
 	baan_repo "github.com/isd-sgcu/rpkm66-backend/pkg/repository/baan"
@@ -19,7 +21,6 @@ import (
 	group_repo "github.com/isd-sgcu/rpkm66-backend/pkg/repository/group"
 	user_repo "github.com/isd-sgcu/rpkm66-backend/pkg/repository/user"
 	file_svc "github.com/isd-sgcu/rpkm66-backend/pkg/service/file"
-	"github.com/isd-sgcu/rpkm66-backend/proto"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -27,6 +28,7 @@ import (
 )
 
 type serviceImpl struct {
+	proto.UnimplementedGroupServiceServer
 	repo               group_repo.Repository
 	baanRepo           baan_repo.Repository
 	userRepo           user_repo.Repository
@@ -120,7 +122,7 @@ func (s *serviceImpl) FindOne(_ context.Context, req *proto.FindOneGroupRequest)
 		return nil, status.Error(codes.NotFound, "group not found")
 	}
 
-	var baanInfos []*proto.BaanInfo
+	var baanInfos []*baan_proto.BaanInfo
 	err = s.cacheRepo.GetCache(usr.GroupID.String(), &baanInfos)
 	if err != nil {
 		if err != redis.Nil {

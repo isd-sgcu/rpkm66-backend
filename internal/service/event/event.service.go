@@ -7,8 +7,8 @@ import (
 	"github.com/google/uuid"
 	entity "github.com/isd-sgcu/rpkm66-backend/internal/entity"
 	"github.com/isd-sgcu/rpkm66-backend/internal/entity/event"
+	proto "github.com/isd-sgcu/rpkm66-backend/internal/proto/rpkm66/backend/event/v1"
 	event_repo "github.com/isd-sgcu/rpkm66-backend/pkg/repository/event"
-	"github.com/isd-sgcu/rpkm66-backend/proto"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -16,6 +16,7 @@ import (
 )
 
 type serviceImpl struct {
+	proto.UnimplementedEventServiceServer
 	repo event_repo.Repository
 }
 

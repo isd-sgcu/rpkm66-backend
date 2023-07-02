@@ -8,15 +8,16 @@ import (
 	constant "github.com/isd-sgcu/rpkm66-backend/constant/baan"
 	"github.com/isd-sgcu/rpkm66-backend/internal/entity/baan"
 	baan_group_selection "github.com/isd-sgcu/rpkm66-backend/internal/entity/baan-group-selection"
+	proto "github.com/isd-sgcu/rpkm66-backend/internal/proto/rpkm66/backend/baan/v1"
 	baan_repo "github.com/isd-sgcu/rpkm66-backend/pkg/repository/baan"
 	cache_repo "github.com/isd-sgcu/rpkm66-backend/pkg/repository/cache"
-	"github.com/isd-sgcu/rpkm66-backend/proto"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type serviceImpl struct {
+	proto.UnimplementedBaanServiceServer
 	repository baan_repo.Repository
 	cache      cache_repo.Repository
 	conf       cfgldr.App

@@ -8,12 +8,12 @@ import (
 	entity "github.com/isd-sgcu/rpkm66-backend/internal/entity"
 	"github.com/isd-sgcu/rpkm66-backend/internal/entity/event"
 	"github.com/isd-sgcu/rpkm66-backend/internal/entity/user"
+	proto "github.com/isd-sgcu/rpkm66-backend/internal/proto/rpkm66/backend/user/v1"
 	eventSrv "github.com/isd-sgcu/rpkm66-backend/internal/service/event"
 	"github.com/isd-sgcu/rpkm66-backend/internal/utils"
 	event_repo "github.com/isd-sgcu/rpkm66-backend/pkg/repository/event"
 	user_repo "github.com/isd-sgcu/rpkm66-backend/pkg/repository/user"
 	file_svc "github.com/isd-sgcu/rpkm66-backend/pkg/service/file"
-	"github.com/isd-sgcu/rpkm66-backend/proto"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
@@ -22,6 +22,7 @@ import (
 )
 
 type serviceImpl struct {
+	proto.UnimplementedUserServiceServer
 	repo      user_repo.Repository
 	eventRepo event_repo.Repository
 	fileSrv   file_svc.Service

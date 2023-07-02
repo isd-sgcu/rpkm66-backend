@@ -8,10 +8,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/isd-sgcu/rpkm66-backend/cfgldr"
 	"github.com/isd-sgcu/rpkm66-backend/internal/entity/checkin"
+	proto "github.com/isd-sgcu/rpkm66-backend/internal/proto/rpkm66/backend/checkin/v1"
 	"github.com/isd-sgcu/rpkm66-backend/internal/utils"
 	cache_repo "github.com/isd-sgcu/rpkm66-backend/pkg/repository/cache"
 	checkin_repo "github.com/isd-sgcu/rpkm66-backend/pkg/repository/checkin"
-	"github.com/isd-sgcu/rpkm66-backend/proto"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -21,6 +21,7 @@ import (
 )
 
 type serviceImpl struct {
+	proto.UnimplementedCheckinServiceServer
 	repo  checkin_repo.Repository
 	cache cache_repo.Repository
 	conf  cfgldr.App

@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-package group;
+package rpkm66.backend.group.v1;
 
-import "baan.proto";
+import "rpkm66/backend/baan/v1/baan.proto";
 
-option go_package = "src/proto";
+option go_package = "rpkm66/backend/group/v1";
 
 service GroupService {
   rpc FindOne(FindOneGroupRequest) returns (FindOneGroupResponse) {}
@@ -21,7 +21,7 @@ message Group{
   string leaderID = 2;
   string token = 3;
   repeated UserInfo members = 4;
-  repeated baan.BaanInfo baans = 5;
+  repeated rpkm66.backend.baan.v1.BaanInfo baans = 5;
 }
 
 message UserInfo {

@@ -14,6 +14,8 @@ import (
 	baan_group_selection "github.com/isd-sgcu/rpkm66-backend/internal/entity/baan-group-selection"
 	"github.com/isd-sgcu/rpkm66-backend/internal/entity/group"
 	"github.com/isd-sgcu/rpkm66-backend/internal/entity/user"
+	baan_proto "github.com/isd-sgcu/rpkm66-backend/internal/proto/rpkm66/backend/baan/v1"
+	proto "github.com/isd-sgcu/rpkm66-backend/internal/proto/rpkm66/backend/group/v1"
 	"github.com/isd-sgcu/rpkm66-backend/internal/utils"
 	mockBaan "github.com/isd-sgcu/rpkm66-backend/mocks/baan"
 	mockBgs "github.com/isd-sgcu/rpkm66-backend/mocks/baan-group-selection"
@@ -21,7 +23,6 @@ import (
 	mockFile "github.com/isd-sgcu/rpkm66-backend/mocks/file"
 	mock "github.com/isd-sgcu/rpkm66-backend/mocks/group"
 	mockUser "github.com/isd-sgcu/rpkm66-backend/mocks/user"
-	"github.com/isd-sgcu/rpkm66-backend/proto"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -217,11 +218,11 @@ func createBaan() []*baan.Baan {
 	return baans
 }
 
-func createBaansDto() []*proto.Baan {
-	var baans []*proto.Baan
+func createBaansDto() []*baan_proto.Baan {
+	var baans []*baan_proto.Baan
 
 	for i := 0; i < 3; i++ {
-		b := proto.Baan{
+		b := baan_proto.Baan{
 			Id:            faker.UUIDDigit(),
 			NameTH:        faker.Word(),
 			DescriptionTH: faker.Paragraph(),
@@ -258,7 +259,7 @@ func (t *GroupServiceTest) TestFindOneSuccess() {
 	fileSrv := &mockFile.ServiceMock{}
 	fileSrv.On("GetSignedUrl", t.UserMock.ID.String()).Return("", nil)
 
-	var baanIns []*proto.BaanInfo
+	var baanIns []*baan_proto.BaanInfo
 	cacheRepo := &mockCache.RepositoryMock{}
 	cacheRepo.On("GetCache", t.Group.ID.String(), &baanIns).Return(baans, nil)
 
@@ -1190,11 +1191,11 @@ func createBaansArray(groupId uuid.UUID, baan []*baan.Baan) ([]*baan_group_selec
 	return baanSelections, baanIds
 }
 
-func createBaanInfo(baans []*baan.Baan) []*proto.BaanInfo {
-	var baanInfos []*proto.BaanInfo
+func createBaanInfo(baans []*baan.Baan) []*baan_proto.BaanInfo {
+	var baanInfos []*baan_proto.BaanInfo
 	for _, baan := range baans {
 
-		b := &proto.BaanInfo{
+		b := &baan_proto.BaanInfo{
 			Id:       baan.ID.String(),
 			NameTH:   baan.NameTH,
 			NameEN:   baan.NameEN,

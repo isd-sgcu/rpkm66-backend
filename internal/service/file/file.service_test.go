@@ -5,7 +5,7 @@ import (
 
 	"github.com/bxcodec/faker/v3"
 	mock "github.com/isd-sgcu/rpkm66-backend/mocks/file"
-	"github.com/isd-sgcu/rpkm66-backend/proto"
+	proto "github.com/isd-sgcu/rpkm66-go-proto/rpkm66/file/file/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"google.golang.org/grpc/codes"

@@ -16,7 +16,7 @@
 # vendor/
 
 # config file
-config.toml
+*config.toml
 .env
 .env.prod
 

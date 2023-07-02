@@ -10,11 +10,12 @@ import (
 	"github.com/isd-sgcu/rpkm66-backend/internal/entity"
 	"github.com/isd-sgcu/rpkm66-backend/internal/entity/event"
 	"github.com/isd-sgcu/rpkm66-backend/internal/entity/user"
+	event_proto "github.com/isd-sgcu/rpkm66-backend/internal/proto/rpkm66/backend/event/v1"
+	proto "github.com/isd-sgcu/rpkm66-backend/internal/proto/rpkm66/backend/user/v1"
 	"github.com/isd-sgcu/rpkm66-backend/internal/utils"
 	eMock "github.com/isd-sgcu/rpkm66-backend/mocks/event"
 	fMock "github.com/isd-sgcu/rpkm66-backend/mocks/file"
 	mock "github.com/isd-sgcu/rpkm66-backend/mocks/user"
-	"github.com/isd-sgcu/rpkm66-backend/proto"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -31,7 +32,7 @@ type UserServiceTest struct {
 	CreateUserReqMock *proto.CreateUserRequest
 	UpdateUserReqMock *proto.UpdateUserRequest
 	Event             *event.Event
-	EventDto          *proto.Event
+	EventDto          *event_proto.Event
 }
 
 func TestUserService(t *testing.T) {
@@ -82,7 +83,7 @@ func (t *UserServiceTest) SetupTest() {
 		ImageURL:      faker.Paragraph(),
 	}
 
-	t.EventDto = &proto.Event{
+	t.EventDto = &event_proto.Event{
 		Id:            t.Event.ID.String(),
 		NameTH:        t.Event.NameTH,
 		DescriptionTH: t.Event.DescriptionTH,
@@ -107,7 +108,7 @@ func (t *UserServiceTest) SetupTest() {
 		ImageURL:      faker.Paragraph(),
 	}
 
-	t.EventDto = &proto.Event{
+	t.EventDto = &event_proto.Event{
 		Id:            t.Event.ID.String(),
 		NameTH:        t.Event.NameTH,
 		DescriptionTH: t.Event.DescriptionTH,
@@ -132,7 +133,7 @@ func (t *UserServiceTest) SetupTest() {
 		ImageURL:      faker.Paragraph(),
 	}
 
-	t.EventDto = &proto.Event{
+	t.EventDto = &event_proto.Event{
 		Id:            t.Event.ID.String(),
 		NameTH:        t.Event.NameTH,
 		DescriptionTH: t.Event.DescriptionTH,
@@ -632,11 +633,11 @@ func (t *UserServiceTest) TestFindByStudentIDNotFound() {
 	assert.Equal(t.T(), codes.NotFound, st.Code())
 }
 
-func (t *UserServiceTest) createEventDto(in []*event.Event) []*proto.Event {
-	var result []*proto.Event
+func (t *UserServiceTest) createEventDto(in []*event.Event) []*event_proto.Event {
+	var result []*event_proto.Event
 
 	for _, e := range in {
-		r := &proto.Event{
+		r := &event_proto.Event{
 			Id:            e.ID.String(),
 			NameTH:        e.NameTH,
 			DescriptionTH: e.DescriptionTH,

@@ -2,7 +2,7 @@ package file
 
 import (
 	file_svc "github.com/isd-sgcu/rpkm66-backend/internal/service/file"
-	"github.com/isd-sgcu/rpkm66-backend/proto"
+	proto "github.com/isd-sgcu/rpkm66-go-proto/rpkm66/file/file/v1"
 )
 
 type Service interface {

@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package user;
+package rpkm66.backend.checkin.v1;
 
-option go_package = "src/proto";
+option go_package = "rpkm66/backend/checkin/v1";
 
 service CheckinService {
   rpc CheckinVerify(CheckinVerifyRequest) returns (CheckinVerifyResponse){}

@@ -1,8 +1,10 @@
 syntax = "proto3";
-import "event.proto";
-package user;
 
-option go_package = "src/proto";
+package rpkm66.backend.user.v1;
+
+import "rpkm66/backend/event/v1/event.proto";
+
+option go_package = "rpkm66/backend/user/v1";
 
 service UserService {
   rpc FindOne(FindOneUserRequest) returns (FindOneUserResponse){}
@@ -137,5 +139,5 @@ message GetUserEstampRequest {
 }
 
 message GetUserEstampResponse {
-  repeated event.Event eventList = 1;
+  repeated rpkm66.backend.event.v1.Event eventList = 1;
 }

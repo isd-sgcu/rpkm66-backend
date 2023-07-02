@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package baan;
+package rpkm66.backend.baan.v1;
 
-option go_package = "src/proto";
+option go_package = "rpkm66/backend/baan/v1";
 
 service BaanService {
   rpc FindAllBaan(FindAllBaanRequest) returns (FindAllBaanResponse) {}

@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/isd-sgcu/rpkm66-backend/cfgldr"
+	proto "github.com/isd-sgcu/rpkm66-backend/internal/proto/rpkm66/backend/baan/v1"
 	baan_svc "github.com/isd-sgcu/rpkm66-backend/internal/service/baan"
 	baan_repo "github.com/isd-sgcu/rpkm66-backend/pkg/repository/baan"
 	cache_repo "github.com/isd-sgcu/rpkm66-backend/pkg/repository/cache"
-	"github.com/isd-sgcu/rpkm66-backend/proto"
 )
 
 type Service interface {

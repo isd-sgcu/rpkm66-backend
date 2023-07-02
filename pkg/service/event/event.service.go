@@ -3,9 +3,9 @@ package event
 import (
 	"context"
 
+	proto "github.com/isd-sgcu/rpkm66-backend/internal/proto/rpkm66/backend/event/v1"
 	event_svc "github.com/isd-sgcu/rpkm66-backend/internal/service/event"
 	event_repo "github.com/isd-sgcu/rpkm66-backend/pkg/repository/event"
-	"github.com/isd-sgcu/rpkm66-backend/proto"
 )
 
 type Service interface {
