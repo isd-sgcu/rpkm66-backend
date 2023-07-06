@@ -6,6 +6,8 @@ on:
       - dev
       - master
       - beta
+env:
+  GOPRIVATE: github.com/isd-sgcu/*
 
 jobs:
   build:
@@ -20,7 +22,6 @@ jobs:
 
       - name: Download dependencies
         run: go mod download
-
       - name: Vet
         run: |
           go vet ./...
