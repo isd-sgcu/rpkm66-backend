@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"math/rand"
 	"testing"
 	"time"
 
@@ -61,6 +62,9 @@ func (t *UserServiceTest) SetupTest() {
 		FoodRestriction: faker.Word(),
 		AllergyMedicine: faker.Word(),
 		Disease:         faker.Word(),
+		EmerPhone:       faker.Phonenumber(),
+		EmerRelation:    faker.Word(),
+		WantBottle:      rand.Intn(2) == 0,
 		CanSelectBaan:   utils.BoolAdr(true),
 		IsVerify:        utils.BoolAdr(true),
 		IsGotTicket:     utils.BoolAdr(true),
@@ -159,6 +163,9 @@ func (t *UserServiceTest) SetupTest() {
 		FoodRestriction: t.User.FoodRestriction,
 		AllergyMedicine: t.User.AllergyMedicine,
 		Disease:         t.User.Disease,
+		EmerPhone:       t.User.EmerPhone,
+		EmerRelation:    t.User.EmerRelation,
+		WantBottle:      t.User.WantBottle,
 		CanSelectBaan:   *t.User.CanSelectBaan,
 		IsVerify:        *t.User.IsVerify,
 		BaanId:          t.User.BaanID.String(),
@@ -181,6 +188,9 @@ func (t *UserServiceTest) SetupTest() {
 			FoodRestriction: t.User.FoodRestriction,
 			AllergyMedicine: t.User.AllergyMedicine,
 			Disease:         t.User.Disease,
+			EmerPhone:       t.User.EmerPhone,
+			EmerRelation:    t.User.EmerRelation,
+			WantBottle:      t.User.WantBottle,
 			CanSelectBaan:   *t.User.CanSelectBaan,
 			IsVerify:        *t.User.IsVerify,
 			BaanId:          t.User.BaanID.String(),
@@ -200,6 +210,9 @@ func (t *UserServiceTest) SetupTest() {
 		FoodRestriction: t.User.FoodRestriction,
 		AllergyMedicine: t.User.AllergyMedicine,
 		Disease:         t.User.Disease,
+		EmerPhone:       t.User.EmerPhone,
+		EmerRelation:    t.User.EmerRelation,
+		WantBottle:      t.User.WantBottle,
 	}
 
 	t.UpdateUser = &user.User{
@@ -214,6 +227,9 @@ func (t *UserServiceTest) SetupTest() {
 		FoodRestriction: t.User.FoodRestriction,
 		AllergyMedicine: t.User.AllergyMedicine,
 		Disease:         t.User.Disease,
+		EmerPhone:       t.User.EmerPhone,
+		EmerRelation:    t.User.EmerRelation,
+		WantBottle:      t.User.WantBottle,
 	}
 }
 
@@ -362,6 +378,9 @@ func (t *UserServiceTest) TestCreateSuccess() {
 		FoodRestriction: t.User.FoodRestriction,
 		AllergyMedicine: t.User.AllergyMedicine,
 		Disease:         t.User.Disease,
+		EmerPhone:       t.User.EmerPhone,
+		EmerRelation:    t.User.EmerRelation,
+		WantBottle:      t.User.WantBottle,
 		CanSelectBaan:   t.User.CanSelectBaan,
 		BaanID:          t.User.BaanID,
 	}
@@ -397,6 +416,9 @@ func (t *UserServiceTest) TestCreateInternalErr() {
 		FoodRestriction: t.User.FoodRestriction,
 		AllergyMedicine: t.User.AllergyMedicine,
 		Disease:         t.User.Disease,
+		EmerPhone:       t.User.EmerPhone,
+		EmerRelation:    t.User.EmerRelation,
+		WantBottle:      t.User.WantBottle,
 		CanSelectBaan:   t.User.CanSelectBaan,
 		BaanID:          t.User.BaanID,
 	}
