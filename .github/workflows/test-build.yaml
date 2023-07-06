@@ -32,3 +32,5 @@ jobs:
           context: .
           push: false
           tags: test
+          secret-files: |
+            "netrcConf=/home/runner/.netrc"
