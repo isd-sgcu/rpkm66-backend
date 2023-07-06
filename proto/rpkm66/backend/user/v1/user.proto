@@ -36,7 +36,7 @@ message User{
   string disease = 15;
   string emerPhone = 16;
   string emerRelation = 17;
-  bool WantBottle = 18;
+  bool wantBottle = 18;
   string imageUrl = 19;
   bool canSelectBaan = 20;
   bool isVerify = 21;
@@ -91,7 +91,7 @@ message UpdateUserRequest{
   string disease = 12;
   string emerPhone = 13;
   string emerRelation = 14;
-  bool WantBottle = 15;
+  bool wantBottle = 15;
 }
 
 message UpdateUserResponse{
