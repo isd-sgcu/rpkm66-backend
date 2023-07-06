@@ -1,6 +1,7 @@
 package seed
 
 import (
+	"math/rand"
 	"strconv"
 	"time"
 
@@ -26,6 +27,9 @@ func (s Seed) UserSeed1655751437484() error {
 			FoodRestriction: faker.Word(),
 			AllergyMedicine: faker.Word(),
 			Disease:         faker.Word(),
+			EmerPhone:       faker.Phonenumber(),
+			EmerRelation:    faker.Word(),
+			WantBottle:      getBool(),
 		}
 		err := s.db.Create(&usr).Error
 
@@ -46,4 +50,8 @@ func min(a, b int) int {
 func getTitle() string {
 	title := faker.Word()
 	return title[0:min(10, len(title))]
+}
+
+func getBool() bool {
+	return rand.Intn(2) == 0
 }

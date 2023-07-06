@@ -34,11 +34,14 @@ message User{
   string foodRestriction = 13;
   string allergyMedicine = 14;
   string disease = 15;
-  string imageUrl = 16;
-  bool canSelectBaan = 17;
-  bool isVerify = 18;
-  string baanId = 19;
-  bool isGotTicket = 20;
+  string emerPhone = 16;
+  string emerRelation = 17;
+  bool WantBottle = 18;
+  string imageUrl = 19;
+  bool canSelectBaan = 20;
+  bool isVerify = 21;
+  string baanId = 22;
+  bool isGotTicket = 23;
 }
 
 // FindOne
@@ -86,6 +89,9 @@ message UpdateUserRequest{
   string foodRestriction = 10;
   string allergyMedicine = 11;
   string disease = 12;
+  string emerPhone = 13;
+  string emerRelation = 14;
+  bool WantBottle = 15;
 }
 
 message UpdateUserResponse{

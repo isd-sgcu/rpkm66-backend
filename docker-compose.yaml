@@ -2,14 +2,15 @@ version: "3.9"
 
 services:
   local-db:
-    image: mysql:8.0.28-oracle
+    image: postgres:15.3-alpine
     container_name: rnkm-local-db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: rnkm-db
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: rnkm-db
     volumes:
-      - ./volumes/mysql:/var/lib/mysql
+      - ./volumes/postgres:/var/lib/postgresql
     ports:
       - "5432:5432"
 

@@ -195,6 +195,9 @@ func (s *serviceImpl) Update(_ context.Context, req *proto.UpdateUserRequest) (r
 		FoodRestriction: req.FoodRestriction,
 		AllergyMedicine: req.AllergyMedicine,
 		Disease:         req.Disease,
+		EmerPhone:       req.EmerPhone,
+		EmerRelation:    req.EmerRelation,
+		WantBottle:      req.WantBottle,
 	}
 
 	err = s.repo.Update(req.Id, raw)
@@ -392,6 +395,9 @@ func DtoToRaw(in *proto.User) (result *user.User, err error) {
 		FoodRestriction: in.FoodRestriction,
 		AllergyMedicine: in.AllergyMedicine,
 		Disease:         in.Disease,
+		EmerPhone:       in.EmerPhone,
+		EmerRelation:    in.EmerRelation,
+		WantBottle:      in.WantBottle,
 		GroupID:         groupId,
 		BaanID:          baanId,
 		CanSelectBaan:   &in.CanSelectBaan,
@@ -433,6 +439,9 @@ func RawToDto(in *user.User, imgUrl string) *proto.User {
 		FoodRestriction: in.FoodRestriction,
 		AllergyMedicine: in.AllergyMedicine,
 		Disease:         in.Disease,
+		EmerPhone:       in.EmerPhone,
+		EmerRelation:    in.EmerRelation,
+		WantBottle:      in.WantBottle,
 		ImageUrl:        imgUrl,
 		CanSelectBaan:   *in.CanSelectBaan,
 		IsVerify:        *in.IsVerify,

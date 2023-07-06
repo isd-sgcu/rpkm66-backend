@@ -6,21 +6,28 @@ on:
       - dev
       - master
       - beta
+env:
+  GOPRIVATE: github.com/isd-sgcu/*
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+          
+      - name: setup credential
+        env:
+          NETRC_CONFIG: ${{ secrets.NETRC_CONFIG }}
+        run: |
+          echo "$NETRC_CONFIG" >> /home/runner/.netrc
 
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4.0.1
         with:
-          go-version: 1.20
+          go-version: '1.20'
 
       - name: Download dependencies
         run: go mod download
-
       - name: Vet
         run: |
           go vet ./...
