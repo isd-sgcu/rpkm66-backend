@@ -46,6 +46,12 @@ func (s *serviceImpl) FindOne(_ context.Context, req *proto.FindOneUserRequest) 
 		if ok {
 			switch st.Code() {
 			case codes.NotFound:
+				log.Error().
+					Err(err).
+					Str("service", "user").
+					Str("module", "find one").
+					Str("id", req.Id).
+					Msg("User image not found")
 				return &proto.FindOneUserResponse{User: RawToDto(&raw, "")}, nil
 
 			case codes.Unavailable:
@@ -77,6 +83,13 @@ func (s *serviceImpl) FindOne(_ context.Context, req *proto.FindOneUserRequest) 
 
 		return nil, err
 	}
+
+	log.Error().
+		Err(err).
+		Str("service", "user").
+		Str("module", "find one").
+		Str("id", req.Id).
+		Msg("Found user image")
 
 	return &proto.FindOneUserResponse{User: RawToDto(&raw, url)}, nil
 }
