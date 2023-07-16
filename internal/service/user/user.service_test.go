@@ -64,7 +64,7 @@ func (t *UserServiceTest) SetupTest() {
 		Disease:         faker.Word(),
 		EmerPhone:       faker.Phonenumber(),
 		EmerRelation:    faker.Word(),
-		WantBottle:      rand.Intn(2) == 0,
+		WantBottle:      getBoolPtr(),
 		CanSelectBaan:   utils.BoolAdr(true),
 		IsVerify:        utils.BoolAdr(true),
 		IsGotTicket:     utils.BoolAdr(true),
@@ -165,7 +165,7 @@ func (t *UserServiceTest) SetupTest() {
 		Disease:         t.User.Disease,
 		EmerPhone:       t.User.EmerPhone,
 		EmerRelation:    t.User.EmerRelation,
-		WantBottle:      t.User.WantBottle,
+		WantBottle:      *t.User.WantBottle,
 		CanSelectBaan:   *t.User.CanSelectBaan,
 		IsVerify:        *t.User.IsVerify,
 		BaanId:          t.User.BaanID.String(),
@@ -190,7 +190,7 @@ func (t *UserServiceTest) SetupTest() {
 			Disease:         t.User.Disease,
 			EmerPhone:       t.User.EmerPhone,
 			EmerRelation:    t.User.EmerRelation,
-			WantBottle:      t.User.WantBottle,
+			WantBottle:      *t.User.WantBottle,
 			CanSelectBaan:   *t.User.CanSelectBaan,
 			IsVerify:        *t.User.IsVerify,
 			BaanId:          t.User.BaanID.String(),
@@ -212,7 +212,7 @@ func (t *UserServiceTest) SetupTest() {
 		Disease:         t.User.Disease,
 		EmerPhone:       t.User.EmerPhone,
 		EmerRelation:    t.User.EmerRelation,
-		WantBottle:      t.User.WantBottle,
+		WantBottle:      *t.User.WantBottle,
 	}
 
 	t.UpdateUser = &user.User{
@@ -695,4 +695,9 @@ func (t *UserServiceTest) createEvent() []*event.Event {
 	}
 
 	return result
+}
+
+func getBoolPtr() *bool {
+	value := rand.Intn(2) == 0
+	return &value
 }
