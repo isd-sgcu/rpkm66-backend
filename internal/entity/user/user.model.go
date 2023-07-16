@@ -27,7 +27,7 @@ type User struct {
 	Disease         string         `json:"disease" gorm:"type:text"`
 	EmerPhone       string         `json:"emer_phone" gorm:"type:text"`
 	EmerRelation    string         `json:"emer_relation" gorm:"type:text"`
-	WantBottle      bool           `json:"wants_bottle" gorm:"type:boolean"`
+	WantBottle      *bool          `json:"wants_bottle" gorm:"type:boolean"`
 	CanSelectBaan   *bool          `json:"can_select_baan"`
 	IsVerify        *bool          `json:"is_verify"`
 	IsGotTicket     *bool          `json:"is_got_ticket"`

@@ -29,7 +29,7 @@ func (s Seed) UserSeed1655751437484() error {
 			Disease:         faker.Word(),
 			EmerPhone:       faker.Phonenumber(),
 			EmerRelation:    faker.Word(),
-			WantBottle:      getBool(),
+			WantBottle:      getBoolPtr(),
 		}
 		err := s.db.Create(&usr).Error
 
@@ -52,6 +52,7 @@ func getTitle() string {
 	return title[0:min(10, len(title))]
 }
 
-func getBool() bool {
-	return rand.Intn(2) == 0
+func getBoolPtr() *bool {
+	value := rand.Intn(2) == 0
+	return &value
 }
