@@ -128,6 +128,7 @@ func RawToDtoBaanSelection(in *[]*baan_group_selection.BaanGroupSelection) []*pr
 			NameTH:   b.Baan.NameTH,
 			NameEN:   b.Baan.NameEN,
 			ImageUrl: b.Baan.ImageUrl,
+			Size:     proto.BaanSize(b.Baan.Size),
 		}
 
 		result = append(result, bi)

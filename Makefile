@@ -1,5 +1,5 @@
 proto:
-	find . -name *.proto -exec protoc --proto_path=proto --go_out=internal/proto --go-grpc_out=internal/proto {} \;
+	./scripts/compile_proto.pl
 
 test:
 	go vet ./...
