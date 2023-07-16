@@ -39,6 +39,7 @@ message BaanInfo{
   string nameTH = 2;
   string nameEN = 3;
   string imageUrl = 4;
+  BaanSize size = 5;
 }
 
 // Find All Baan

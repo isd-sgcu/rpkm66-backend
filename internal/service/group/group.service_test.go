@@ -1200,6 +1200,7 @@ func createBaanInfo(baans []*baan.Baan) []*baan_proto.BaanInfo {
 			NameTH:   baan.NameTH,
 			NameEN:   baan.NameEN,
 			ImageUrl: baan.ImageUrl,
+			Size:     baan_proto.BaanSize(baan.Size),
 		}
 
 		baanInfos = append(baanInfos, b)
