@@ -42,7 +42,7 @@ message User{
   bool isVerify = 21;
   string baanId = 22;
   bool isGotTicket = 23;
-  string personalityGame =24;
+  string personalityGame = 24;
 }
 
 // FindOne
@@ -93,7 +93,7 @@ message UpdateUserRequest{
   string emerPhone = 13;
   string emerRelation = 14;
   bool wantBottle = 15;
-  string personalityGame =16;
+  string personalityGame = 16;
 }
 
 message UpdateUserResponse{
