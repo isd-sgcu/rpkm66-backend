@@ -70,6 +70,7 @@ func (t *UserServiceTest) SetupTest() {
 		IsGotTicket:     utils.BoolAdr(true),
 		GroupID:         utils.UUIDAdr(uuid.New()),
 		BaanID:          utils.UUIDAdr(uuid.New()),
+		PersonalityGame: faker.Word(),
 	}
 
 	t.Event = &event.Event{
@@ -170,6 +171,7 @@ func (t *UserServiceTest) SetupTest() {
 		IsVerify:        *t.User.IsVerify,
 		BaanId:          t.User.BaanID.String(),
 		IsGotTicket:     *t.User.IsGotTicket,
+		PersonalityGame: t.User.PersonalityGame,
 	}
 
 	t.CreateUserReqMock = &proto.CreateUserRequest{
@@ -194,6 +196,7 @@ func (t *UserServiceTest) SetupTest() {
 			CanSelectBaan:   *t.User.CanSelectBaan,
 			IsVerify:        *t.User.IsVerify,
 			BaanId:          t.User.BaanID.String(),
+			PersonalityGame: t.User.PersonalityGame,
 		},
 	}
 
@@ -213,6 +216,7 @@ func (t *UserServiceTest) SetupTest() {
 		EmerPhone:       t.User.EmerPhone,
 		EmerRelation:    t.User.EmerRelation,
 		WantBottle:      *t.User.WantBottle,
+		PersonalityGame: t.User.PersonalityGame,
 	}
 
 	t.UpdateUser = &user.User{
@@ -230,6 +234,7 @@ func (t *UserServiceTest) SetupTest() {
 		EmerPhone:       t.User.EmerPhone,
 		EmerRelation:    t.User.EmerRelation,
 		WantBottle:      t.User.WantBottle,
+		PersonalityGame: t.User.PersonalityGame,
 	}
 }
 
@@ -383,6 +388,7 @@ func (t *UserServiceTest) TestCreateSuccess() {
 		WantBottle:      t.User.WantBottle,
 		CanSelectBaan:   t.User.CanSelectBaan,
 		BaanID:          t.User.BaanID,
+		PersonalityGame: t.User.PersonalityGame,
 	}
 
 	repo.On("Create", in).Return(t.User, nil)
@@ -421,6 +427,7 @@ func (t *UserServiceTest) TestCreateInternalErr() {
 		WantBottle:      t.User.WantBottle,
 		CanSelectBaan:   t.User.CanSelectBaan,
 		BaanID:          t.User.BaanID,
+		PersonalityGame: t.User.PersonalityGame,
 	}
 
 	repo.On("Create", in).Return(nil, errors.New("something wrong"))
