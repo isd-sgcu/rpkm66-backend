@@ -19,15 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	UserService_FindOne_FullMethodName         = "/rpkm66.backend.user.v1.UserService/FindOne"
-	UserService_FindByStudentID_FullMethodName = "/rpkm66.backend.user.v1.UserService/FindByStudentID"
-	UserService_Create_FullMethodName          = "/rpkm66.backend.user.v1.UserService/Create"
-	UserService_Update_FullMethodName          = "/rpkm66.backend.user.v1.UserService/Update"
-	UserService_Verify_FullMethodName          = "/rpkm66.backend.user.v1.UserService/Verify"
-	UserService_Delete_FullMethodName          = "/rpkm66.backend.user.v1.UserService/Delete"
-	UserService_CreateOrUpdate_FullMethodName  = "/rpkm66.backend.user.v1.UserService/CreateOrUpdate"
-	UserService_ConfirmEstamp_FullMethodName   = "/rpkm66.backend.user.v1.UserService/ConfirmEstamp"
-	UserService_GetUserEstamp_FullMethodName   = "/rpkm66.backend.user.v1.UserService/GetUserEstamp"
+	UserService_FindOne_FullMethodName               = "/rpkm66.backend.user.v1.UserService/FindOne"
+	UserService_FindByStudentID_FullMethodName       = "/rpkm66.backend.user.v1.UserService/FindByStudentID"
+	UserService_Create_FullMethodName                = "/rpkm66.backend.user.v1.UserService/Create"
+	UserService_Update_FullMethodName                = "/rpkm66.backend.user.v1.UserService/Update"
+	UserService_Verify_FullMethodName                = "/rpkm66.backend.user.v1.UserService/Verify"
+	UserService_Delete_FullMethodName                = "/rpkm66.backend.user.v1.UserService/Delete"
+	UserService_CreateOrUpdate_FullMethodName        = "/rpkm66.backend.user.v1.UserService/CreateOrUpdate"
+	UserService_ConfirmEstamp_FullMethodName         = "/rpkm66.backend.user.v1.UserService/ConfirmEstamp"
+	UserService_GetUserEstamp_FullMethodName         = "/rpkm66.backend.user.v1.UserService/GetUserEstamp"
+	UserService_UpdatePersonalityGame_FullMethodName = "/rpkm66.backend.user.v1.UserService/UpdatePersonalityGame"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -43,6 +44,7 @@ type UserServiceClient interface {
 	CreateOrUpdate(ctx context.Context, in *CreateOrUpdateUserRequest, opts ...grpc.CallOption) (*CreateOrUpdateUserResponse, error)
 	ConfirmEstamp(ctx context.Context, in *ConfirmEstampRequest, opts ...grpc.CallOption) (*ConfirmEstampResponse, error)
 	GetUserEstamp(ctx context.Context, in *GetUserEstampRequest, opts ...grpc.CallOption) (*GetUserEstampResponse, error)
+	UpdatePersonalityGame(ctx context.Context, in *UpdatePersonalityGameRequest, opts ...grpc.CallOption) (*UpdatePersonalityGameResponse, error)
 }
 
 type userServiceClient struct {
@@ -134,6 +136,15 @@ func (c *userServiceClient) GetUserEstamp(ctx context.Context, in *GetUserEstamp
 	return out, nil
 }
 
+func (c *userServiceClient) UpdatePersonalityGame(ctx context.Context, in *UpdatePersonalityGameRequest, opts ...grpc.CallOption) (*UpdatePersonalityGameResponse, error) {
+	out := new(UpdatePersonalityGameResponse)
+	err := c.cc.Invoke(ctx, UserService_UpdatePersonalityGame_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
@@ -147,6 +158,7 @@ type UserServiceServer interface {
 	CreateOrUpdate(context.Context, *CreateOrUpdateUserRequest) (*CreateOrUpdateUserResponse, error)
 	ConfirmEstamp(context.Context, *ConfirmEstampRequest) (*ConfirmEstampResponse, error)
 	GetUserEstamp(context.Context, *GetUserEstampRequest) (*GetUserEstampResponse, error)
+	UpdatePersonalityGame(context.Context, *UpdatePersonalityGameRequest) (*UpdatePersonalityGameResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -180,6 +192,9 @@ func (UnimplementedUserServiceServer) ConfirmEstamp(context.Context, *ConfirmEst
 }
 func (UnimplementedUserServiceServer) GetUserEstamp(context.Context, *GetUserEstampRequest) (*GetUserEstampResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserEstamp not implemented")
+}
+func (UnimplementedUserServiceServer) UpdatePersonalityGame(context.Context, *UpdatePersonalityGameRequest) (*UpdatePersonalityGameResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdatePersonalityGame not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -356,6 +371,24 @@ func _UserService_GetUserEstamp_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_UpdatePersonalityGame_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePersonalityGameRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).UpdatePersonalityGame(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_UpdatePersonalityGame_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).UpdatePersonalityGame(ctx, req.(*UpdatePersonalityGameRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -398,6 +431,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserEstamp",
 			Handler:    _UserService_GetUserEstamp_Handler,
+		},
+		{
+			MethodName: "UpdatePersonalityGame",
+			Handler:    _UserService_UpdatePersonalityGame_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

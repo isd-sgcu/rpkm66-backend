@@ -56,3 +56,7 @@ func (r *repositoryImpl) GetUserEstamp(uId string, thisUser *user.User, results 
 	//Get all estamp that this user has
 	return r.db.Model(thisUser).Where("user_id", uId).Association("Events").Find(&results)
 }
+
+func (r *repositoryImpl) UpdatePersonalityGame(id string, result *user.User) error{
+	return r.db.Where(id, "id = ?", id).Updates(&result).First(&result, "id = ?", id).Error
+}

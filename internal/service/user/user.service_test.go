@@ -708,3 +708,36 @@ func getBoolPtr() *bool {
 	value := rand.Intn(2) == 0
 	return &value
 }
+func (t *UserServiceTest) TestUpdatePersonalityGameSuccess() {
+	want := &proto.UpdatePersonalityGameResponse{User: t.UserDto}
+
+	repo := &mock.RepositoryMock{}
+
+	repo.On("Update", t.User.ID.String(), t.UpdateUser).Return(t.User, nil)
+
+	fileSrv := &fMock.ServiceMock{}
+
+	eventSrv := &eMock.RepositoryMock{}
+	srv := NewService(repo, fileSrv, eventSrv)
+	actual, err := srv.Update(context.Background(), t.UpdateUserReqMock)
+
+	assert.Nil(t.T(), err)
+	assert.Equal(t.T(), want, actual)
+}
+
+func (t *UserServiceTest) TestUpdatePersonalityGameNotFound() {
+	repo := &mock.RepositoryMock{}
+	repo.On("Update", t.User.ID.String(), t.UpdateUser).Return(nil, errors.New("Not found user"))
+
+	fileSrv := &fMock.ServiceMock{}
+
+	eventSrv := &eMock.RepositoryMock{}
+	srv := NewService(repo, fileSrv, eventSrv)
+	actual, err := srv.Update(context.Background(), t.UpdateUserReqMock)
+
+	st, ok := status.FromError(err)
+
+	assert.True(t.T(), ok)
+	assert.Nil(t.T(), actual)
+	assert.Equal(t.T(), codes.NotFound, st.Code())
+}
