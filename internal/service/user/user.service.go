@@ -211,7 +211,6 @@ func (s *serviceImpl) Update(_ context.Context, req *proto.UpdateUserRequest) (r
 		EmerPhone:       req.EmerPhone,
 		EmerRelation:    req.EmerRelation,
 		WantBottle:      &req.WantBottle,
-		PersonalityGame: req.PersonalityGame,
 	}
 
 	err = s.repo.Update(req.Id, raw)

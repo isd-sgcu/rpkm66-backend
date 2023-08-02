@@ -27,14 +27,13 @@ import (
 
 type UserServiceTest struct {
 	suite.Suite
-	User                         *user.User
-	UpdateUser                   *user.User
-	UserDto                      *proto.User
-	CreateUserReqMock            *proto.CreateUserRequest
-	UpdateUserReqMock            *proto.UpdateUserRequest
-	UpdatePersonalityGameReqMock *proto.UpdatePersonalityGameRequest
-	Event                        *event.Event
-	EventDto                     *event_proto.Event
+	User              *user.User
+	UpdateUser        *user.User
+	UserDto           *proto.User
+	CreateUserReqMock *proto.CreateUserRequest
+	UpdateUserReqMock *proto.UpdateUserRequest
+	Event             *event.Event
+	EventDto          *event_proto.Event
 }
 
 func TestUserService(t *testing.T) {
@@ -71,7 +70,6 @@ func (t *UserServiceTest) SetupTest() {
 		IsGotTicket:     utils.BoolAdr(true),
 		GroupID:         utils.UUIDAdr(uuid.New()),
 		BaanID:          utils.UUIDAdr(uuid.New()),
-		PersonalityGame: faker.Word(),
 	}
 
 	t.Event = &event.Event{
@@ -172,7 +170,6 @@ func (t *UserServiceTest) SetupTest() {
 		IsVerify:        *t.User.IsVerify,
 		BaanId:          t.User.BaanID.String(),
 		IsGotTicket:     *t.User.IsGotTicket,
-		PersonalityGame: t.User.PersonalityGame,
 	}
 
 	t.CreateUserReqMock = &proto.CreateUserRequest{
@@ -197,7 +194,6 @@ func (t *UserServiceTest) SetupTest() {
 			CanSelectBaan:   *t.User.CanSelectBaan,
 			IsVerify:        *t.User.IsVerify,
 			BaanId:          t.User.BaanID.String(),
-			PersonalityGame: t.User.PersonalityGame,
 		},
 	}
 
@@ -217,12 +213,6 @@ func (t *UserServiceTest) SetupTest() {
 		EmerPhone:       t.User.EmerPhone,
 		EmerRelation:    t.User.EmerRelation,
 		WantBottle:      *t.User.WantBottle,
-		PersonalityGame: t.User.PersonalityGame,
-	}
-
-	t.UpdatePersonalityGameReqMock = &proto.UpdatePersonalityGameRequest{
-		Id:              t.User.ID.String(),
-		PersonalityGame: t.User.PersonalityGame,
 	}
 
 	t.UpdateUser = &user.User{
@@ -240,7 +230,6 @@ func (t *UserServiceTest) SetupTest() {
 		EmerPhone:       t.User.EmerPhone,
 		EmerRelation:    t.User.EmerRelation,
 		WantBottle:      t.User.WantBottle,
-		PersonalityGame: t.User.PersonalityGame,
 	}
 }
 
@@ -715,34 +704,44 @@ func getBoolPtr() *bool {
 	return &value
 }
 func (t *UserServiceTest) TestUpdatePersonalityGameSuccess() {
-	want := &proto.UpdatePersonalityGameResponse{User: t.UserDto}
+	want := "Good"
 
+	updatedUser := t.User
+	updatedUser.PersonalityGame = want
 	repo := &mock.RepositoryMock{}
 	repo.On("Update", t.User.ID.String(), &user.User{
-		PersonalityGame: t.UpdateUser.PersonalityGame,
-	}).Return(t.User, nil)
+		PersonalityGame: want,
+	}).Return(updatedUser, nil)
 
 	fileSrv := &fMock.ServiceMock{}
 
 	eventSrv := &eMock.RepositoryMock{}
 	srv := NewService(repo, fileSrv, eventSrv)
-	actual, err := srv.UpdatePersonalityGame(context.Background(), t.UpdatePersonalityGameReqMock)
+	actual, err := srv.UpdatePersonalityGame(context.Background(), &proto.UpdatePersonalityGameRequest{
+		Id:              t.UserDto.Id,
+		PersonalityGame: want,
+	})
 
 	assert.Nil(t.T(), err)
-	assert.Equal(t.T(), want, actual)
+	assert.Equal(t.T(), want, actual.User.PersonalityGame)
 }
 
 func (t *UserServiceTest) TestUpdatePersonalityGameNotFound() {
+	want := "Good"
+
 	repo := &mock.RepositoryMock{}
 	repo.On("Update", t.User.ID.String(), &user.User{
-		PersonalityGame: t.UpdateUser.PersonalityGame,
+		PersonalityGame: want,
 	}).Return(nil, errors.New("Not found user"))
 
 	fileSrv := &fMock.ServiceMock{}
 
 	eventSrv := &eMock.RepositoryMock{}
 	srv := NewService(repo, fileSrv, eventSrv)
-	actual, err := srv.UpdatePersonalityGame(context.Background(), t.UpdatePersonalityGameReqMock)
+	actual, err := srv.UpdatePersonalityGame(context.Background(), &proto.UpdatePersonalityGameRequest{
+		Id:              t.UserDto.Id,
+		PersonalityGame: want,
+	})
 
 	st, ok := status.FromError(err)
 
