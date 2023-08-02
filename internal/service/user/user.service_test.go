@@ -27,13 +27,14 @@ import (
 
 type UserServiceTest struct {
 	suite.Suite
-	User              *user.User
-	UpdateUser        *user.User
-	UserDto           *proto.User
-	CreateUserReqMock *proto.CreateUserRequest
-	UpdateUserReqMock *proto.UpdateUserRequest
-	Event             *event.Event
-	EventDto          *event_proto.Event
+	User                         *user.User
+	UpdateUser                   *user.User
+	UserDto                      *proto.User
+	CreateUserReqMock            *proto.CreateUserRequest
+	UpdateUserReqMock            *proto.UpdateUserRequest
+	UpdatePersonalityGameReqMock *proto.UpdatePersonalityGameRequest
+	Event                        *event.Event
+	EventDto                     *event_proto.Event
 }
 
 func TestUserService(t *testing.T) {
@@ -216,6 +217,11 @@ func (t *UserServiceTest) SetupTest() {
 		EmerPhone:       t.User.EmerPhone,
 		EmerRelation:    t.User.EmerRelation,
 		WantBottle:      *t.User.WantBottle,
+		PersonalityGame: t.User.PersonalityGame,
+	}
+
+	t.UpdatePersonalityGameReqMock = &proto.UpdatePersonalityGameRequest{
+		Id:              t.User.ID.String(),
 		PersonalityGame: t.User.PersonalityGame,
 	}
 
@@ -712,14 +718,15 @@ func (t *UserServiceTest) TestUpdatePersonalityGameSuccess() {
 	want := &proto.UpdatePersonalityGameResponse{User: t.UserDto}
 
 	repo := &mock.RepositoryMock{}
-
-	repo.On("Update", t.User.ID.String(), t.UpdateUser).Return(t.User, nil)
+	repo.On("Update", t.User.ID.String(), &user.User{
+		PersonalityGame: t.UpdateUser.PersonalityGame,
+	}).Return(t.User, nil)
 
 	fileSrv := &fMock.ServiceMock{}
 
 	eventSrv := &eMock.RepositoryMock{}
 	srv := NewService(repo, fileSrv, eventSrv)
-	actual, err := srv.Update(context.Background(), t.UpdateUserReqMock)
+	actual, err := srv.UpdatePersonalityGame(context.Background(), t.UpdatePersonalityGameReqMock)
 
 	assert.Nil(t.T(), err)
 	assert.Equal(t.T(), want, actual)
@@ -727,13 +734,15 @@ func (t *UserServiceTest) TestUpdatePersonalityGameSuccess() {
 
 func (t *UserServiceTest) TestUpdatePersonalityGameNotFound() {
 	repo := &mock.RepositoryMock{}
-	repo.On("Update", t.User.ID.String(), t.UpdateUser).Return(nil, errors.New("Not found user"))
+	repo.On("Update", t.User.ID.String(), &user.User{
+		PersonalityGame: t.UpdateUser.PersonalityGame,
+	}).Return(nil, errors.New("Not found user"))
 
 	fileSrv := &fMock.ServiceMock{}
 
 	eventSrv := &eMock.RepositoryMock{}
 	srv := NewService(repo, fileSrv, eventSrv)
-	actual, err := srv.Update(context.Background(), t.UpdateUserReqMock)
+	actual, err := srv.UpdatePersonalityGame(context.Background(), t.UpdatePersonalityGameReqMock)
 
 	st, ok := status.FromError(err)
 
