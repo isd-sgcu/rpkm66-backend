@@ -34,6 +34,7 @@ type User struct {
 	GroupID         *uuid.UUID     `json:"group_id" gorm:"index"`
 	Events          []*event.Event `json:"events" gorm:"many2many:event_user"`
 	BaanID          *uuid.UUID     `json:"baan_id" gorm:"index"`
+	PersonalityGame string         `json:"personality_game" gorm:"type:text"`
 }
 
 func (m *User) BeforeCreate(_ *gorm.DB) error {

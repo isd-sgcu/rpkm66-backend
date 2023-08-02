@@ -16,6 +16,7 @@ service UserService {
   rpc CreateOrUpdate(CreateOrUpdateUserRequest) returns (CreateOrUpdateUserResponse){}
   rpc ConfirmEstamp(ConfirmEstampRequest) returns (ConfirmEstampResponse){}
   rpc GetUserEstamp(GetUserEstampRequest) returns (GetUserEstampResponse){}
+  rpc UpdatePersonalityGame (UpdatePersonalityGameRequest) returns (UpdatePersonalityGameResponse){}
 }
 
 message User{
@@ -42,6 +43,7 @@ message User{
   bool isVerify = 21;
   string baanId = 22;
   bool isGotTicket = 23;
+  string personalityGame = 24;
 }
 
 // FindOne
@@ -146,4 +148,14 @@ message GetUserEstampRequest {
 
 message GetUserEstampResponse {
   repeated rpkm66.backend.event.v1.Event eventList = 1;
+}
+
+// Update Personality Game
+message UpdatePersonalityGameRequest{
+  string id = 1;
+  string personalityGame = 2;
+}
+
+message UpdatePersonalityGameResponse{
+  User user = 1;
 }

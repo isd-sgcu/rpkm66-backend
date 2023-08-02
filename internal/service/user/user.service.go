@@ -414,6 +414,7 @@ func DtoToRaw(in *proto.User) (result *user.User, err error) {
 		GroupID:         groupId,
 		BaanID:          baanId,
 		CanSelectBaan:   &in.CanSelectBaan,
+		PersonalityGame: in.PersonalityGame,
 	}, nil
 }
 
@@ -460,6 +461,7 @@ func RawToDto(in *user.User, imgUrl string) *proto.User {
 		IsVerify:        *in.IsVerify,
 		IsGotTicket:     *in.IsGotTicket,
 		BaanId:          baanId,
+		PersonalityGame: in.PersonalityGame,
 	}
 }
 
@@ -472,4 +474,17 @@ func GetColumnName(verifyName string) string {
 	default:
 		return ""
 	}
+}
+
+func (s *serviceImpl) UpdatePersonalityGame(_ context.Context, req *proto.UpdatePersonalityGameRequest) (res *proto.UpdatePersonalityGameResponse, err error) {
+	raw := &user.User{
+		PersonalityGame: req.PersonalityGame,
+	}
+
+	err = s.repo.Update(req.Id, raw)
+	if err != nil {
+		return nil, status.Error(codes.NotFound, "user not found")
+	}
+
+	return &proto.UpdatePersonalityGameResponse{User: RawToDto(raw, "")}, nil
 }

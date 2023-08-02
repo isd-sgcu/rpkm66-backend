@@ -383,6 +383,7 @@ func (t *UserServiceTest) TestCreateSuccess() {
 		WantBottle:      t.User.WantBottle,
 		CanSelectBaan:   t.User.CanSelectBaan,
 		BaanID:          t.User.BaanID,
+		PersonalityGame: t.User.PersonalityGame,
 	}
 
 	repo.On("Create", in).Return(t.User, nil)
@@ -421,6 +422,7 @@ func (t *UserServiceTest) TestCreateInternalErr() {
 		WantBottle:      t.User.WantBottle,
 		CanSelectBaan:   t.User.CanSelectBaan,
 		BaanID:          t.User.BaanID,
+		PersonalityGame: t.User.PersonalityGame,
 	}
 
 	repo.On("Create", in).Return(nil, errors.New("something wrong"))
@@ -700,4 +702,50 @@ func (t *UserServiceTest) createEvent() []*event.Event {
 func getBoolPtr() *bool {
 	value := rand.Intn(2) == 0
 	return &value
+}
+func (t *UserServiceTest) TestUpdatePersonalityGameSuccess() {
+	want := "Good"
+
+	updatedUser := t.User
+	updatedUser.PersonalityGame = want
+	repo := &mock.RepositoryMock{}
+	repo.On("Update", t.User.ID.String(), &user.User{
+		PersonalityGame: want,
+	}).Return(updatedUser, nil)
+
+	fileSrv := &fMock.ServiceMock{}
+
+	eventSrv := &eMock.RepositoryMock{}
+	srv := NewService(repo, fileSrv, eventSrv)
+	actual, err := srv.UpdatePersonalityGame(context.Background(), &proto.UpdatePersonalityGameRequest{
+		Id:              t.UserDto.Id,
+		PersonalityGame: want,
+	})
+
+	assert.Nil(t.T(), err)
+	assert.Equal(t.T(), want, actual.User.PersonalityGame)
+}
+
+func (t *UserServiceTest) TestUpdatePersonalityGameNotFound() {
+	want := "Good"
+
+	repo := &mock.RepositoryMock{}
+	repo.On("Update", t.User.ID.String(), &user.User{
+		PersonalityGame: want,
+	}).Return(nil, errors.New("Not found user"))
+
+	fileSrv := &fMock.ServiceMock{}
+
+	eventSrv := &eMock.RepositoryMock{}
+	srv := NewService(repo, fileSrv, eventSrv)
+	actual, err := srv.UpdatePersonalityGame(context.Background(), &proto.UpdatePersonalityGameRequest{
+		Id:              t.UserDto.Id,
+		PersonalityGame: want,
+	})
+
+	st, ok := status.FromError(err)
+
+	assert.True(t.T(), ok)
+	assert.Nil(t.T(), actual)
+	assert.Equal(t.T(), codes.NotFound, st.Code())
 }
