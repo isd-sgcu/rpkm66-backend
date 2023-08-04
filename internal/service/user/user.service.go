@@ -437,6 +437,10 @@ func RawToDto(in *user.User, imgUrl string) *proto.User {
 		baanId = in.BaanID.String()
 	}
 
+	if in.WantBottle == nil {
+		in.WantBottle = utils.BoolAdr(false)
+	}
+
 	return &proto.User{
 		Id:              in.ID.String(),
 		Title:           in.Title,
